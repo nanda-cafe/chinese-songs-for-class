@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月亮代表我的心 · 邓丽君 · Annotated Karaoke</title>
+<style>
+  :root{
+    --hsk1:#E53935; --hsk2:#FB8C00; --hsk3:#F9A825;
+    --hsk4:#43A047; --hsk5:#1E88E5; --hsk6:#8E24AA;
+    --pos-pron:#7CB342; --pos-verb:#D81B60; --pos-noun:#00897B; --pos-adj:#F4511E;
+    --pos-adv:#3949AB; --pos-part:#757575; --pos-mw:#8D6E63; --pos-num:#5E35B1;
+    --pos-prep:#00ACC1; --pos-conj:#8D6E63; --pos-intj:#00838F;
+    --ink:#1a1a1a; --bg:#f5f5f5; --card:#fff; --accent:#b22222;
+    --hi:#f9d76e; --hi-bg:#fffdf0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);
+    font-family:'Segoe UI','PingFang SC',Roboto,'Helvetica Neue',sans-serif;
+    line-height:1.55;padding:20px;min-height:100vh;}
+
+  .main-page{max-width:960px;margin:0 auto;background:var(--card);
+    padding:24px 30px;border-radius:14px;
+    box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+
+  header.song-header{text-align:center;border-bottom:2px solid #333;
+    padding-bottom:12px;margin-bottom:16px;}
+  header.song-header h1{font-size:1.9rem;font-weight:700;letter-spacing:4px;
+    color:var(--accent);}
+  header.song-header .pinyin-title{font-size:0.95rem;color:#555;
+    letter-spacing:1px;margin-top:2px;}
+  header.song-header .artist{font-size:1rem;color:#222;margin-top:4px;}
+  header.song-header .song-meta{font-size:0.78rem;color:#777;
+    margin-top:2px;font-style:italic;}
+
+  .stream-buttons{
+    display:flex;justify-content:center;flex-wrap:wrap;gap:10px;
+    margin:0 0 20px;padding:14px 16px;
+    background:linear-gradient(180deg,#fafafa,#f5f5f5);
+    border:1px solid #eee;border-radius:12px;
+  }
+  .stream-buttons a{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:9px 18px;border-radius:22px;text-decoration:none;
+    font-size:0.82rem;font-weight:600;color:#fff;
+    transition:transform 0.12s, box-shadow 0.15s;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+    letter-spacing:0.2px;
+  }
+  .stream-buttons a:hover{
+    transform:translateY(-1px);
+    box-shadow:0 5px 14px rgba(0,0,0,0.15);
+  }
+  .stream-buttons a .icon{font-size:0.95rem;}
+  .stream-buttons a.ytmusic{background:#FF0000;}
+  .stream-buttons a.deezer{background:#A238FF;}
+  .stream-buttons a.qq{background:#31C27C;}
+
+  .controls-row{
+    display:flex;justify-content:center;align-items:center;
+    gap:16px;flex-wrap:wrap;margin-bottom:18px;
+    padding-bottom:14px;border-bottom:1px solid #f0f0f0;
+  }
+  .lang-toggle{display:flex;gap:8px;}
+  .lang-toggle button{
+    padding:6px 16px;border-radius:20px;border:1.5px solid #ccc;
+    background:var(--card);cursor:pointer;font-size:0.8rem;
+    font-family:inherit;font-weight:600;color:#666;transition:all 0.2s;
+  }
+  .lang-toggle button.active{
+    background:var(--accent);color:#fff;border-color:var(--accent);
+  }
+  .lang-toggle button:hover:not(.active){border-color:#999;}
+
+  .mark-toggle{display:flex;gap:8px;flex-wrap:wrap;}
+  .mark-toggle button{
+    padding:6px 14px;border-radius:20px;border:1.5px solid #ccc;
+    background:var(--card);cursor:pointer;font-size:0.78rem;
+    font-family:inherit;font-weight:600;color:#999;transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .mark-toggle button .icon{font-size:0.9rem;line-height:1;}
+  .mark-toggle button.active{color:#444;border-color:#999;}
+  .mark-toggle button:hover:not(.active){border-color:#aaa;}
+
+  .karaoke-toggle{
+    padding:8px 20px;border-radius:22px;border:1.5px solid #ccc;
+    background:var(--card);cursor:pointer;font-size:0.82rem;
+    font-family:inherit;font-weight:700;color:#888;transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:7px;
+    letter-spacing:0.5px;
+  }
+  .karaoke-toggle.active{
+    background:linear-gradient(135deg,#d32f2f,#b22222);color:#fff;
+    border-color:var(--accent);
+    box-shadow:0 4px 12px rgba(178,34,34,0.3);
+  }
+  .karaoke-toggle:hover:not(.active){border-color:#999;}
+
+  body.karaoke-mode .mark-toggle button{
+    opacity:0.35;pointer-events:none;cursor:not-allowed;
+  }
+
+  body.hide-hsk .hz-link{border-bottom-color:transparent !important;}
+  body.hide-hsk details.collapsible.legend-panel{display:none;}
+
+  body.hide-grammar #lyrics-container .pos{visibility:hidden;}
+  body.hide-grammar details.collapsible.grammar-panel{display:none;}
+
+  body.hide-translation .translation{display:none;}
+  body.hide-translation .hz-link ruby rt{display:none;}
+
+  body.hide-pinyin .py{display:none;}
+
+  body.karaoke-mode .hz-link{border-bottom-color:transparent !important;}
+  body.karaoke-mode #lyrics-container .pos{display:none;}
+  body.karaoke-mode .translation{display:none;}
+  body.karaoke-mode .hz-link ruby rt{display:none;}
+  body.karaoke-mode .py{font-size:0.92rem;color:#555;font-weight:600;letter-spacing:0.5px;}
+  body.karaoke-mode .hz-link a,
+  body.karaoke-mode .hz-link[href]{pointer-events:none;cursor:default;}
+
+  details.collapsible{
+    margin-bottom:16px;border:1px solid #eee;border-radius:10px;
+    background:#fafafa;overflow:hidden;
+  }
+  details.collapsible > summary{
+    padding:12px 16px;cursor:pointer;font-size:0.82rem;
+    font-weight:700;color:#555;text-transform:uppercase;
+    letter-spacing:1px;display:flex;align-items:center;
+    gap:10px;list-style:none;transition:background 0.15s;
+    user-select:none;
+  }
+  details.collapsible > summary::-webkit-details-marker{display:none;}
+  details.collapsible > summary::before{
+    content:'▸';display:inline-block;color:#999;
+    transition:transform 0.2s;font-size:0.9rem;width:12px;
+    text-align:center;
+  }
+  details.collapsible[open] > summary::before{transform:rotate(90deg);}
+  details.collapsible > summary:hover{background:#f0f0f0;}
+  details.collapsible[open] > summary{
+    border-bottom:1px solid #eee;background:#f5f5f5;
+  }
+  details.collapsible > .content{padding:14px 16px;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:0.8rem;}
+  .legend-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .legend-group h4{font-size:0.72rem;color:#555;text-transform:uppercase;
+    letter-spacing:0.5px;margin-right:2px;}
+  .legend-swatch{display:inline-block;padding:1px 7px;border-radius:3px;
+    color:#fff;font-weight:600;font-size:0.72rem;}
+  .legend-swatch.hsk1{background:var(--hsk1);}
+  .legend-swatch.hsk2{background:var(--hsk2);}
+  .legend-swatch.hsk3{background:var(--hsk3);color:#333;}
+  .legend-swatch.hsk4{background:var(--hsk4);}
+  .legend-swatch.hsk5{background:var(--hsk5);}
+  .legend-swatch.hsk6{background:var(--hsk6);}
+
+  .glossary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;}
+  .glossary-item{display:flex;gap:8px;align-items:flex-start;
+    padding:4px 0;border-bottom:1px dotted #eee;
+    font-size:0.78rem;line-height:1.5;}
+  .glossary-tag{
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:0.72rem;font-weight:700;min-width:44px;
+    padding:1px 6px;border-radius:3px;color:#fff;flex-shrink:0;
+  }
+  .glossary-tag.pos-pron{background:var(--pos-pron);}
+  .glossary-tag.pos-verb{background:var(--pos-verb);}
+  .glossary-tag.pos-noun{background:var(--pos-noun);}
+  .glossary-tag.pos-adj{background:var(--pos-adj);}
+  .glossary-tag.pos-adv{background:var(--pos-adv);}
+  .glossary-tag.pos-part{background:var(--pos-part);}
+  .glossary-tag.pos-mw{background:var(--pos-mw);}
+  .glossary-tag.pos-num{background:var(--pos-num);}
+  .glossary-tag.pos-prep{background:var(--pos-prep);}
+  .glossary-tag.pos-conj{background:var(--pos-conj);}
+  .glossary-tag.pos-intj{background:var(--pos-intj);}
+  .glossary-desc strong{color:var(--accent);}
+
+  .line{margin-bottom:18px;padding-bottom:14px;
+    border-bottom:1px dashed #e8e8e8;}
+  .line:last-child{border-bottom:none;}
+  .words{display:flex;flex-wrap:wrap;gap:16px;
+    align-items:flex-end;margin-bottom:6px;}
+  .word{display:flex;flex-direction:column;align-items:center;
+    min-width:42px;}
+  .hz-link{text-decoration:none;display:inline-block;
+    border-bottom:2.5px solid #999;padding-bottom:1px;cursor:pointer;
+    transition:border-bottom-color 0.2s ease;}
+  .hz-link.hsk1{border-bottom-color:var(--hsk1);}
+  .hz-link.hsk2{border-bottom-color:var(--hsk2);}
+  .hz-link.hsk3{border-bottom-color:var(--hsk3);}
+  .hz-link.hsk4{border-bottom-color:var(--hsk4);}
+  .hz-link.hsk5{border-bottom-color:var(--hsk5);}
+  .hz-link.hsk6{border-bottom-color:var(--hsk6);}
+  .hz-link.no-hsk{border-bottom-color:#ccc;}
+  .hz-link ruby{font-size:1.3rem;font-weight:600;color:#000;
+    line-height:2.2;ruby-align:center;}
+  .hz-link ruby rt{font-size:0.52rem;color:#666;
+    font-weight:400;letter-spacing:0.2px;}
+  .py{font-size:0.78rem;color:#444;margin-top:2px;
+    text-align:center;letter-spacing:0.2px;}
+  .pos{
+    font-size:0.58rem;font-weight:500;margin-top:1px;padding:0;
+    background:none;text-align:center;line-height:1.2;
+    text-decoration:none;border-bottom:1px dotted transparent;cursor:pointer;
+    transition:visibility 0.15s;
+  }
+  .pos.pos-pron{color:var(--pos-pron);} .pos.pos-verb{color:var(--pos-verb);}
+  .pos.pos-noun{color:var(--pos-noun);} .pos.pos-adj{color:var(--pos-adj);}
+  .pos.pos-adv{color:var(--pos-adv);}   .pos.pos-part{color:var(--pos-part);}
+  .pos.pos-mw{color:var(--pos-mw);}     .pos.pos-num{color:var(--pos-num);}
+  .pos.pos-prep{color:var(--pos-prep);} .pos.pos-conj{color:var(--pos-conj);}
+  .pos.pos-intj{color:var(--pos-intj);}
+  .translation{font-size:0.92rem;font-style:italic;color:#222;
+    border-left:3px solid var(--accent);padding-left:12px;margin-top:4px;}
+
+  .line.instrumental{display:none;}
+
+  body.karaoke-mode #lyrics-container .line:not(.instrumental){
+    opacity:0.32;transition:opacity 0.4s ease, background 0.4s ease;
+    border-left:5px solid transparent;border-radius:0 14px 14px 0;
+    padding:16px;margin:0 -8px 8px;border-bottom:none;
+  }
+  body.karaoke-mode #lyrics-container .line:not(.instrumental).active{
+    opacity:1;
+    background:linear-gradient(to right,var(--hi-bg) 0%,transparent 80%);
+    border-left-color:var(--hi);
+    box-shadow:inset 0 0 0 1px rgba(249,215,110,0.3);
+  }
+  body.karaoke-mode #lyrics-container .line:not(.instrumental).past{opacity:0.16;}
+  body.karaoke-mode #lyrics-container .line:not(.instrumental).active .words .word .hz-link ruby{font-size:1.5rem;}
+  body.karaoke-mode #lyrics-container .line:not(.instrumental).active .words{gap:18px 22px;}
+
+  body.karaoke-mode .word.k-sung .py{color:#c44;font-weight:700;}
+  body.karaoke-mode .word.k-sung .hz-link ruby{color:#c44;}
+  body.karaoke-mode .word.k-active .py{
+    color:var(--accent);font-weight:800;font-size:0.95rem;
+    text-shadow:0 1px 6px rgba(178,34,34,0.18);
+  }
+  body.karaoke-mode .word.k-active .hz-link ruby{
+    color:var(--accent);font-weight:800;
+    text-shadow:0 2px 16px rgba(178,34,34,0.3);
+    transform:scale(1.35);
+    transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  body.karaoke-mode #lyrics-container .line.instrumental{
+    display:block;
+    text-align:center;
+    padding:20px 16px;
+    margin:0 -8px 8px;
+    border-left:5px solid transparent;
+    border-radius:0 14px 14px 0;
+    color:#aaa;
+    font-style:italic;
+    letter-spacing:2px;
+    font-size:0.92rem;
+    opacity:0.42;
+    transition:opacity 0.4s ease, background 0.4s ease,
+               border-color 0.4s ease, color 0.4s ease;
+  }
+  body.karaoke-mode #lyrics-container .line.instrumental.active{
+    opacity:1;
+    color:var(--accent);
+    background:linear-gradient(to right,var(--hi-bg) 0%,transparent 80%);
+    border-left-color:var(--hi);
+    box-shadow:inset 0 0 0 1px rgba(249,215,110,0.3);
+  }
+  body.karaoke-mode #lyrics-container .line.instrumental.past{
+    opacity:0.2;
+  }
+  .instr-content{
+    display:inline-flex;align-items:center;gap:12px;
+    font-weight:600;
+  }
+  .instr-icon{
+    font-size:1.25rem;display:inline-block;
+    animation:pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:0.5;transform:scale(1);}
+    50%{opacity:1;transform:scale(1.25);}
+  }
+
+  .karaoke-bar{
+    display:none;position:sticky;top:0;z-index:50;
+    background:var(--card);border-radius:12px;
+    padding:14px 18px;margin-bottom:24px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.08);border:1px solid #eee;
+  }
+  body.karaoke-mode .karaoke-bar{display:block;}
+  .k-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .k-btn{padding:10px 22px;border-radius:24px;border:none;
+    background:linear-gradient(135deg,#d32f2f,#b22222);color:#fff;
+    font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:8px;
+    box-shadow:0 4px 12px rgba(178,34,34,0.3);
+    transition:transform 0.12s, box-shadow 0.15s;letter-spacing:0.3px;}
+  .k-btn:hover{transform:translateY(-1px);
+    box-shadow:0 6px 16px rgba(178,34,34,0.4);}
+  .k-btn:active{transform:translateY(0) scale(0.98);}
+  .k-icon{width:38px;height:38px;border-radius:50%;border:1.5px solid #ddd;
+    background:#fff;color:#555;font-size:0.95rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all 0.15s;font-family:inherit;}
+  .k-icon:hover{border-color:var(--accent);color:var(--accent);}
+  .k-time{font-variant-numeric:tabular-nums;font-size:0.82rem;
+    color:#444;font-weight:600;min-width:100px;text-align:center;}
+  .k-offset{display:flex;align-items:center;gap:5px;font-size:0.72rem;
+    color:#888;margin-left:auto;}
+  .k-offset-btn{border:1px solid #ddd;background:#fff;border-radius:6px;
+    padding:3px 8px;cursor:pointer;font-family:inherit;font-size:0.72rem;
+    color:#666;font-variant-numeric:tabular-nums;}
+  .k-offset-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .k-offset-val{font-variant-numeric:tabular-nums;min-width:42px;
+    text-align:center;color:#444;font-weight:600;}
+  .k-progress-wrap{width:100%;height:6px;background:#eee;border-radius:3px;
+    overflow:hidden;cursor:pointer;margin-top:12px;}
+  .k-progress-fill{height:100%;width:0%;background:var(--accent);
+    transition:width 0.1s linear;}
+
+  @media (max-width:700px){
+    body{padding:10px;}
+    .main-page{padding:16px 14px;}
+    .glossary-grid{grid-template-columns:1fr;}
+    .words{gap:10px;}
+    .stream-buttons a{padding:8px 14px;font-size:0.78rem;}
+    .controls-row{gap:10px;}
+    body.karaoke-mode .word.k-active .hz-link ruby{transform:scale(1.2);}
+  }
+</style>
+</head>
+<body>
+
+<div class="main-page">
+  <header class="song-header">
+    <h1>月亮代表我的心</h1>
+    <div class="pinyin-title">Yuè Liang Dài Biǎo Wǒ De Xīn</div>
+    <div class="artist">邓丽君 · Teresa Teng</div>
+    <div class="song-meta">1977 · 词：孙仪 · 曲：汤尼</div>
+  </header>
+
+  <div class="stream-buttons" id="stream-buttons"></div>
+
+  <div class="controls-row">
+    <div class="lang-toggle" id="lang-toggle">
+      <button data-lang="en" class="active">🇬🇧 English</button>
+      <button data-lang="pt">🇧🇷 Português</button>
+    </div>
+    <div class="mark-toggle" id="mark-toggle">
+      <button id="toggle-hsk" class="active" data-mark="hsk">
+        <span class="icon">📊</span>HSK
+      </button>
+      <button id="toggle-grammar" class="active" data-mark="grammar">
+        <span class="icon">📖</span>Grammar
+      </button>
+      <button id="toggle-translation" class="active" data-mark="translation">
+        <span class="icon">🌐</span>Translation
+      </button>
+      <button id="toggle-pinyin" class="active" data-mark="pinyin">
+        <span class="icon">🔤</span>Pinyin
+      </button>
+    </div>
+    <button class="karaoke-toggle" id="toggle-karaoke">🎤 Karaoke</button>
+  </div>
+
+  <div class="karaoke-bar" id="karaoke-bar">
+    <div class="k-row">
+      <button class="k-btn" id="k-start">▶ Start at first character</button>
+      <button class="k-icon" id="k-reset" title="Reset">⟲</button>
+      <div class="k-time">
+        <span id="k-cur">0:00.0</span> / <span id="k-tot">0:00.0</span>
+      </div>
+      <div class="k-offset">
+        <span>nudge</span>
+        <button class="k-offset-btn" id="k-minus">−0.5s</button>
+        <span class="k-offset-val" id="k-offset">0.0s</span>
+        <button class="k-offset-btn" id="k-plus">+0.5s</button>
+      </div>
+    </div>
+    <div class="k-progress-wrap" id="k-progress">
+      <div class="k-progress-fill" id="k-fill"></div>
+    </div>
+  </div>
+
+  <details class="collapsible legend-panel">
+    <summary>📊 HSK Colour Legend</summary>
+    <div class="content">
+      <div class="legend">
+        <div class="legend-group">
+          <h4>HSK level</h4>
+          <span class="legend-swatch hsk1">HSK 1</span>
+          <span class="legend-swatch hsk2">HSK 2</span>
+          <span class="legend-swatch hsk3">HSK 3</span>
+          <span class="legend-swatch hsk4">HSK 4</span>
+          <span class="legend-swatch hsk5">HSK 5</span>
+          <span class="legend-swatch hsk6">HSK 6</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="collapsible grammar-panel">
+    <summary>📖 Grammar Glossary · click POS tags below words</summary>
+    <div class="content">
+      <div class="glossary-grid">
+        <div class="glossary-item" id="gram-pron"><span class="glossary-tag pos-pron">pron.</span><div class="glossary-desc"><strong>Pronoun</strong> — replaces a noun. Ex.: 我 · 你 · 他 · 我的 · 几.</div></div>
+        <div class="glossary-item" id="gram-verb"><span class="glossary-tag pos-verb">v.</span><div class="glossary-desc"><strong>Verb</strong> — action or state. No conjugation. Ex.: 爱 · 问 · 有 · 想 · 看.</div></div>
+        <div class="glossary-item" id="gram-noun"><span class="glossary-tag pos-noun">n.</span><div class="glossary-desc"><strong>Noun</strong> — names beings and things. Ex.: 心 · 情 · 吻 · 月亮.</div></div>
+        <div class="glossary-item" id="gram-adj"><span class="glossary-tag pos-adj">adj.</span><div class="glossary-desc"><strong>Adjective</strong> — predicative without 是. Ex.: 深 · 真 · 轻 · 大.</div></div>
+        <div class="glossary-item" id="gram-adv"><span class="glossary-tag pos-adv">adv.</span><div class="glossary-desc"><strong>Adverb</strong> — before verb/adjective. Ex.: 也 · 不 · 很 · 都 · 已经.</div></div>
+        <div class="glossary-item" id="gram-part"><span class="glossary-tag pos-part">part.</span><div class="glossary-desc"><strong>Particle</strong> — grammatical function. Ex.: 的 · 地 · 得 · 了 · 吗.</div></div>
+        <div class="glossary-item" id="gram-mw"><span class="glossary-tag pos-mw">m.w.</span><div class="glossary-desc"><strong>Measure word</strong> — counts things. Ex.: 个 · 段 · 分 · 只 · 条.</div></div>
+        <div class="glossary-item" id="gram-num"><span class="glossary-tag pos-num">num.</span><div class="glossary-desc"><strong>Numeral</strong> — number. Ex.: 一 · 两 · 三 · 一个 · 一段.</div></div>
+        <div class="glossary-item" id="gram-prep"><span class="glossary-tag pos-prep">prep.</span><div class="glossary-desc"><strong>Preposition</strong> — links terms. Ex.: 在 · 从 · 到 · 给 · 对.</div></div>
+        <div class="glossary-item" id="gram-conj"><span class="glossary-tag pos-conj">conj.</span><div class="glossary-desc"><strong>Conjunction</strong> — links clauses. Ex.: 和 · 但是 · 因为 · 所以.</div></div>
+        <div class="glossary-item" id="gram-intj"><span class="glossary-tag pos-intj">intj.</span><div class="glossary-desc"><strong>Interjection</strong> — emotional expression. Ex.: 啊 · 呢 · 吧 · 哦.</div></div>
+      </div>
+    </div>
+  </details>
+
+  <div id="lyrics-container"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   SONG DATA — 月亮代表我的心 · 邓丽君
+   Timestamps: standard LRC for the 1977 recording,
+   with the final 3 lines repeated at the end.
+   ═══════════════════════════════════════════════════════════════ */
+const SONG = {
+  title:'月亮代表我的心',
+  titlePinyin:'Yuè Liang Dài Biǎo Wǒ De Xīn',
+  artist:'邓丽君 · Teresa Teng',
+  meta:'1977 · 词：孙仪 · 曲：汤尼',
+
+  stream:{
+    ytmusic:{ label:'YouTube Music', url:'https://music.youtube.com/search?q=' + encodeURIComponent('月亮代表我的心 邓丽君'), icon:'▶' },
+    deezer:{ label:'Deezer', url:'https://www.deezer.com/search/' + encodeURIComponent('月亮代表我的心 邓丽君'), icon:'🎵' },
+    qq:{ label:'QQ 音乐', url:'https://y.qq.com/n/ryqq/search?w=' + encodeURIComponent('月亮代表我的心 邓丽君'), icon:'🎧' }
+  },
+
+  lines:[
+    /* ── Verse 1 ── */
+    { time:'00:12.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:18.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'00:24.00', translation:{en:"My feelings are also true",pt:"Meus sentimentos são sinceros"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'},
+        {hz:'也',py:'yě',gloss:'also',hsk:2,pos:'adv',posName:'adv.'},
+        {hz:'真',py:'zhēn',gloss:'true',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:27.00', translation:{en:"My love is also true",pt:"Meu amor também é verdadeiro"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'noun',posName:'n.'},
+        {hz:'也',py:'yě',gloss:'also',hsk:2,pos:'adv',posName:'adv.'},
+        {hz:'真',py:'zhēn',gloss:'true',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:30.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 2 ── */
+    { time:'00:37.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:43.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'00:49.00', translation:{en:"My feelings never change",pt:"Meus sentimentos não mudam"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'},
+        {hz:'不',py:'bù',gloss:'not',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'移',py:'yí',gloss:'change',hsk:6,pos:'verb',posName:'v.'}
+      ]},
+    { time:'00:52.00', translation:{en:"My love never changes",pt:"Meu amor não se altera"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'noun',posName:'n.'},
+        {hz:'不',py:'bù',gloss:'not',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'变',py:'biàn',gloss:'change',hsk:4,pos:'verb',posName:'v.'}
+      ]},
+    { time:'00:55.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Bridge 1 ── */
+    { time:'01:01.00', translation:{en:"A gentle kiss",pt:"Um leve beijo"},
+      words:[
+        {hz:'轻轻',py:'qīng qīng',gloss:'gently',hsk:4,pos:'adv',posName:'adv.'},
+        {hz:'的',py:'de',gloss:'(adv.)',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一个',py:'yī gè',gloss:'a',hsk:1,pos:'num',posName:'num.'},
+        {hz:'吻',py:'wěn',gloss:'kiss',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:07.00', translation:{en:"Has already moved my heart",pt:"Já tocou o meu coração"},
+      words:[
+        {hz:'已经',py:'yǐ jīng',gloss:'already',hsk:3,pos:'adv',posName:'adv.'},
+        {hz:'打动',py:'dǎ dòng',gloss:'move',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:13.00', translation:{en:"A deep love",pt:"Um sentimento profundo"},
+      words:[
+        {hz:'深深',py:'shēn shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一段',py:'yī duàn',gloss:'a segment',hsk:3,pos:'num',posName:'num.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:19.00', translation:{en:"Makes me miss you to this day",pt:"Me faz sentir sua falta até hoje"},
+      words:[
+        {hz:'教',py:'jiào',gloss:'make',hsk:3,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'思念',py:'sī niàn',gloss:'miss',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'到',py:'dào',gloss:'until',hsk:2,pos:'prep',posName:'prep.'},
+        {hz:'如今',py:'rú jīn',gloss:'now',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 3 ── */
+    { time:'01:25.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'01:31.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'01:37.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'01:40.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'01:43.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Bridge 2 ── */
+    { time:'02:14.00', translation:{en:"A gentle kiss",pt:"Um leve beijo"},
+      words:[
+        {hz:'轻轻',py:'qīng qīng',gloss:'gently',hsk:4,pos:'adv',posName:'adv.'},
+        {hz:'的',py:'de',gloss:'(adv.)',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一个',py:'yī gè',gloss:'a',hsk:1,pos:'num',posName:'num.'},
+        {hz:'吻',py:'wěn',gloss:'kiss',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:20.00', translation:{en:"Has already moved my heart",pt:"Já tocou o meu coração"},
+      words:[
+        {hz:'已经',py:'yǐ jīng',gloss:'already',hsk:3,pos:'adv',posName:'adv.'},
+        {hz:'打动',py:'dǎ dòng',gloss:'move',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:26.00', translation:{en:"A deep love",pt:"Um sentimento profundo"},
+      words:[
+        {hz:'深深',py:'shēn shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一段',py:'yī duàn',gloss:'a segment',hsk:3,pos:'num',posName:'num.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:32.00', translation:{en:"Makes me miss you to this day",pt:"Me faz sentir sua falta até hoje"},
+      words:[
+        {hz:'教',py:'jiào',gloss:'make',hsk:3,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'思念',py:'sī niàn',gloss:'miss',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'到',py:'dào',gloss:'until',hsk:2,pos:'prep',posName:'prep.'},
+        {hz:'如今',py:'rú jīn',gloss:'now',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 4 ── */
+    { time:'02:38.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'02:44.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'02:50.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'02:53.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'02:56.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Final repeat: last 3 lines ── */
+    { time:'03:02.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'03:05.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'03:08.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]}
+  ]
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════ */
+function parseTimecode(tc){
+  if(!tc) return null;
+  const m = tc.match(/^(\d+):(\d+)(?:[.:](\d+))?$/);
+  if(!m) return null;
+  const frac = m[3] ? parseInt(m[3].padEnd(3,'0'),10) : 0;
+  return parseInt(m[1],10)*60 + parseInt(m[2],10) + frac/1000;
+}
+function fmt(s){
+  s = Math.max(0, s);
+  const m = Math.floor(s/60);
+  const sec = Math.floor(s%60);
+  const dec = Math.floor((s%1)*10);
+  return `${m}:${String(sec).padStart(2,'0')}.${dec}`;
+}
+function mdbgUrl(hz){
+  return `https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb=${encodeURIComponent(hz)}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TIMELINE COMPUTATION
+   ═══════════════════════════════════════════════════════════════ */
+const SEC_PER_CHAR   = 0.62;
+const GAP_THRESHOLD  = 4.5;
+const SONG_TAIL      = 10;
+
+function computeTimeline(){
+  const lineStarts = SONG.lines.map(l => parseTimecode(l.time));
+  const lastStart  = lineStarts[lineStarts.length - 1];
+  const songEnd    = lastStart + SONG_TAIL;
+  const entries    = [];
+
+  /* Intro */
+  if(lineStarts[0] >= GAP_THRESHOLD){
+    entries.push({
+      type:'instr', start:0, end:lineStarts[0],
+      label:'前奏 · Intro', key:'intro'
+    });
+  }
+
+  SONG.lines.forEach((line, li) => {
+    const lineStart  = lineStarts[li];
+    const charCount  = line.words.reduce((s, w) => s + w.hz.length, 0);
+    const naturalEnd = lineStart + charCount * SEC_PER_CHAR;
+    const nextStart  = li < SONG.lines.length - 1 ? lineStarts[li+1] : songEnd;
+    const cappedEnd  = Math.min(naturalEnd, nextStart);
+
+    entries.push({
+      type:'line', start:lineStart, end:cappedEnd,
+      lineIdx:li, line, charCount
+    });
+
+    if(li < SONG.lines.length - 1 && nextStart - cappedEnd >= GAP_THRESHOLD){
+      entries.push({
+        type:'instr', start:cappedEnd, end:nextStart,
+        label:'间奏 · Instrumental', key:`mid-${li}`
+      });
+    }
+  });
+
+  /* Outro */
+  const lastEntry = entries[entries.length - 1];
+  if(songEnd - lastEntry.end >= GAP_THRESHOLD){
+    entries.push({
+      type:'instr', start:lastEntry.end, end:songEnd,
+      label:'尾声 · Outro', key:'outro'
+    });
+  }
+
+  return { entries, totalDuration: songEnd };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STREAMING BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+function renderStreamingButtons(song){
+  const host = document.getElementById('stream-buttons');
+  const order = ['ytmusic','deezer','qq'];
+  host.innerHTML = order
+    .filter(k => song.stream[k])
+    .map(k => {
+      const s = song.stream[k];
+      return `<a class="${k}" href="${s.url}" target="_blank" rel="noopener noreferrer">
+        <span class="icon">${s.icon}</span>${s.label}
+      </a>`;
+    }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MARK TOGGLES
+   ═══════════════════════════════════════════════════════════════ */
+const markState = { hsk:true, grammar:true, translation:true, pinyin:true, karaoke:false };
+let preKaraokeSnapshot = null;
+
+function applyMarkState(){
+  document.body.classList.toggle('hide-hsk',         !markState.hsk);
+  document.body.classList.toggle('hide-grammar',     !markState.grammar);
+  document.body.classList.toggle('hide-translation', !markState.translation);
+  document.body.classList.toggle('hide-pinyin',      !markState.pinyin);
+  document.body.classList.toggle('karaoke-mode',     markState.karaoke);
+  document.getElementById('toggle-hsk').classList.toggle('active', markState.hsk);
+  document.getElementById('toggle-grammar').classList.toggle('active', markState.grammar);
+  document.getElementById('toggle-translation').classList.toggle('active', markState.translation);
+  document.getElementById('toggle-pinyin').classList.toggle('active', markState.pinyin);
+  document.getElementById('toggle-karaoke').classList.toggle('active', markState.karaoke);
+}
+
+document.getElementById('mark-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-mark]');
+  if(!btn || markState.karaoke) return;
+  markState[btn.dataset.mark] = !markState[btn.dataset.mark];
+  applyMarkState();
+});
+
+document.getElementById('toggle-karaoke').addEventListener('click', () => {
+  if(!markState.karaoke){
+    preKaraokeSnapshot = {
+      hsk: markState.hsk, grammar: markState.grammar,
+      translation: markState.translation, pinyin: markState.pinyin
+    };
+    markState.karaoke = true;
+    markState.hsk = markState.grammar = markState.translation = false;
+    markState.pinyin = true;
+    applyMarkState();
+    buildKaraokeData();
+  } else {
+    markState.karaoke = false;
+    if(preKaraokeSnapshot){
+      markState.hsk         = preKaraokeSnapshot.hsk;
+      markState.grammar     = preKaraokeSnapshot.grammar;
+      markState.translation = preKaraokeSnapshot.translation;
+      markState.pinyin      = preKaraokeSnapshot.pinyin;
+    }
+    preKaraokeSnapshot = null;
+    applyMarkState();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   LYRICS RENDERING
+   ═══════════════════════════════════════════════════════════════ */
+let currentLang = 'en';
+
+function renderSong(){
+  const { entries } = computeTimeline();
+  let html = '';
+  entries.forEach(entry => {
+    if(entry.type === 'line'){
+      html += renderLyricLine(entry.line, entry.lineIdx);
+    } else {
+      html += `<div class="line instrumental" data-instr-key="${entry.key}">
+        <div class="instr-content">
+          <span class="instr-icon">♪</span>
+          <span class="instr-label">${entry.label}</span>
+        </div>
+      </div>`;
+    }
+  });
+  document.getElementById('lyrics-container').innerHTML = html;
+
+  document.querySelectorAll('#lyrics-container .pos[href]').forEach(a => {
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      if(!markState.grammar) return;
+      const target = document.querySelector(this.getAttribute('href'));
+      if(!target) return;
+      const parentDetails = target.closest('details.collapsible');
+      if(parentDetails && !parentDetails.open) parentDetails.open = true;
+      target.style.background = '#fff7d6';
+      setTimeout(() => { target.style.background = ''; }, 1400);
+      target.scrollIntoView({ behavior:'smooth', block:'center' });
+    });
+  });
+}
+
+function renderLyricLine(line, li){
+  let html = `<div class="line" data-line="${li}" data-time="${line.time}"><div class="words">`;
+  line.words.forEach(w => {
+    const hskClass = w.hsk ? 'hsk' + w.hsk : 'no-hsk';
+    const isHanzi = /[\u4e00-\u9fff]/.test(w.hz);
+    const url = isHanzi ? mdbgUrl(w.hz) : null;
+    const hzTag = isHanzi
+      ? `<a href="${url}" target="_blank" rel="noopener noreferrer"
+            class="hz-link ${hskClass}" title="${w.gloss}">
+           <ruby>${w.hz}<rt>${w.gloss}</rt></ruby></a>`
+      : `<span class="hz-link ${hskClass}" title="${w.gloss}">
+           <ruby>${w.hz}<rt>${w.gloss}</rt></ruby></span>`;
+    html += `<div class="word">${hzTag}<div class="py">${w.py}</div>`;
+    html += (w.pos && w.posName)
+      ? `<a href="#gram-${w.pos}" class="pos pos-${w.pos}">${w.posName}</a>`
+      : `<div class="pos">&nbsp;</div>`;
+    html += `</div>`;
+  });
+  html += `</div><div class="translation">${line.translation[currentLang] || line.translation.en}</div></div>`;
+  return html;
+}
+
+document.getElementById('lang-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if(!btn || btn.dataset.lang === currentLang) return;
+  currentLang = btn.dataset.lang;
+  document.querySelectorAll('#lang-toggle button').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === currentLang)
+  );
+  const wasPlaying = state.playing;
+  renderSong();
+  if(markState.karaoke){
+    buildKaraokeData();
+    state.playing = wasPlaying;
+    if(wasPlaying) state.lastTick = performance.now();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   KARAOKE ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+let lineTimings = [];
+let charTimings = [];
+let totalDuration = 0;
+
+const state = {
+  playing:false, time:0, offset:0,
+  curLine:-1, curChar:-1, rafId:null, lastTick:0
+};
+
+function buildKaraokeData(){
+  const { entries, totalDuration: td } = computeTimeline();
+  totalDuration = td;
+  lineTimings = [];
+  charTimings = [];
+
+  const allLineEls = document.querySelectorAll('#lyrics-container > .line');
+
+  entries.forEach((entry, idx) => {
+    const el = allLineEls[idx];
+    if(!el) return;
+
+    if(entry.type === 'line'){
+      lineTimings.push({
+        type:'line', start:entry.start, end:entry.end,
+        el, lineIdx: entry.lineIdx
+      });
+
+      const wordEls = el.querySelectorAll('.word');
+      const availableDur = entry.end - entry.start;
+      const perChar = availableDur / Math.max(1, entry.charCount);
+      let cursor = entry.start;
+
+      entry.line.words.forEach((w, wi) => {
+        const charCount = w.hz.length;
+        const wStart = cursor;
+        const wEnd   = cursor + charCount * perChar;
+        wordEls[wi].dataset.start   = wStart;
+        wordEls[wi].dataset.end     = wEnd;
+        wordEls[wi].dataset.lineIdx = entry.lineIdx;
+        for(let ci = 0; ci < charCount; ci++){
+          charTimings.push({
+            start: wStart + perChar * ci,
+            end:   wStart + perChar * (ci + 1),
+            lineIdx: entry.lineIdx,
+            wordEl: wordEls[wi]
+          });
+        }
+        cursor = wEnd;
+      });
+    } else {
+      lineTimings.push({ type:'instr', start:entry.start, end:entry.end, el });
+    }
+  });
+
+  document.getElementById('k-tot').textContent = fmt(totalDuration);
+  state.curLine = -1;
+  state.curChar = -1;
+  updateKaraokeDisplay();
+}
+
+function updateKaraokeDisplay(){
+  const t = state.time + state.offset;
+  document.getElementById('k-cur').textContent = fmt(t);
+  document.getElementById('k-fill').style.width =
+    Math.min(100, (t / totalDuration) * 100) + '%';
+  updateKaraokeHighlight(t);
+}
+
+function updateKaraokeHighlight(t){
+  let lo = 0, hi = lineTimings.length - 1, idx = -1;
+  while(lo <= hi){
+    const mid = (lo + hi) >> 1;
+    if(lineTimings[mid].start <= t){ idx = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  if(idx !== state.curLine){
+    state.curLine = idx;
+    lineTimings.forEach((lt, i) => {
+      lt.el.classList.toggle('active', i === idx);
+      lt.el.classList.toggle('past', i < idx);
+    });
+    if(idx >= 0) lineTimings[idx].el.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  document.querySelectorAll('#lyrics-container .word.k-active, #lyrics-container .word.k-sung')
+    .forEach(el => el.classList.remove('k-active', 'k-sung'));
+
+  if(idx < 0) return;
+  const curEntry = lineTimings[idx];
+  if(curEntry.type !== 'line') return;
+
+  const curLineIdx = curEntry.lineIdx;
+  charTimings.forEach(ct => {
+    if(ct.lineIdx !== curLineIdx) return;
+    if(t >= ct.start && t < ct.end)       ct.wordEl.classList.add('k-active');
+    else if(t >= ct.end)                  ct.wordEl.classList.add('k-sung');
+  });
+}
+
+function karaokeLoop(now){
+  if(state.playing){
+    const dt = (now - state.lastTick) / 1000;
+    state.time += dt;
+  }
+  state.lastTick = now;
+  updateKaraokeDisplay();
+  state.rafId = requestAnimationFrame(karaokeLoop);
+}
+
+document.getElementById('k-start').addEventListener('click', () => {
+  if(!charTimings.length) buildKaraokeData();
+  const firstStart = charTimings[0]?.start ?? 0;
+  state.time = firstStart - state.offset;
+  state.curLine = -1;
+  state.playing = true;
+  state.lastTick = performance.now();
+  document.getElementById('k-start').textContent = '▶ Playing…';
+  if(!state.rafId) state.rafId = requestAnimationFrame(karaokeLoop);
+});
+
+document.getElementById('k-reset').addEventListener('click', () => {
+  state.playing = false;
+  state.time = 0;
+  state.curLine = -1;
+  document.getElementById('k-start').textContent = '▶ Start at first character';
+  updateKaraokeDisplay();
+});
+
+function setKOffset(v){
+  state.offset = Math.round(v*10)/10;
+  document.getElementById('k-offset').textContent =
+    (state.offset >= 0 ? '+' : '') + state.offset.toFixed(1) + 's';
+  updateKaraokeDisplay();
+}
+document.getElementById('k-minus').addEventListener('click', () => setKOffset(state.offset - 0.5));
+document.getElementById('k-plus') .addEventListener('click', () => setKOffset(state.offset + 0.5));
+
+document.getElementById('k-progress').addEventListener('click', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  state.time = ratio * totalDuration - state.offset;
+  state.curLine = -1;
+  updateKaraokeDisplay();
+});
+
+document.addEventListener('keydown', e => {
+  if(e.target.matches('input, textarea')) return;
+  if(!markState.karaoke) return;
+  if(e.code === 'Space'){
+    e.preventDefault();
+    if(state.playing){
+      state.playing = false;
+      document.getElementById('k-start').textContent = '▶ Resume';
+    } else {
+      state.playing = true;
+      state.lastTick = performance.now();
+      document.getElementById('k-start').textContent = '▶ Playing…';
+      if(!state.rafId) state.rafId = requestAnimationFrame(karaokeLoop);
+    }
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════ */
+renderStreamingButtons(SONG);
+applyMarkState();
+renderSong();
+</script>
+
+</body>
+</html>
