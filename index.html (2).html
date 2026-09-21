@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月亮代表我的心 · 邓丽君 · Annotated Karaoke + Flashcards</title>
+
+<script>
+  (function(){
+    var t = localStorage.getItem('csfc-theme');
+    if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+
+<!-- Anki .apkg export — exact CDN URLs and load order from the reference
+     draft. If unreachable, the Download button in the export modal
+     detects that at click time and falls back to a clear message;
+     "Copy as TSV" needs none of these and always works. -->
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/krmanik/genanki-js/dist/genanki.js"></script>
+
+<style>
+  :root, html[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#0f1115; --card:#171a21; --surface:#1a1e26; --surface2:#21262f;
+    --line:#262b36; --toggle-border:#303743;
+    --text:#e8eaf0; --muted:#8b93a7; --dim:#6b7280;
+    --accent:#e0b46a; --accent-contrast:#14161a;
+    --good:#66BB6A; --hard:#FFA726; --again:#EF5350; --easy:#42A5F5;
+    --hsk1:#EF5350; --hsk2:#FF9800; --hsk3:#FFCA28;
+    --hsk4:#66BB6A; --hsk5:#42A5F5; --hsk6:#AB47BC;
+    --pos-pron:#9CCC65; --pos-verb:#EC407A; --pos-noun:#26A69A; --pos-adj:#FF7043;
+    --pos-adv:#5C6BC0; --pos-part:#9E9E9E; --pos-mw:#A1887F; --pos-num:#7E57C2;
+    --pos-prep:#26C6DA; --pos-conj:#A1887F; --pos-intj:#26A69A;
+    --shadow:0 12px 30px rgba(0,0,0,.45);
+  }
+  html[data-theme="light"]{
+    color-scheme: light;
+    --bg:#f5f5f5; --card:#ffffff; --surface:#fafafa; --surface2:#f0f0f0;
+    --line:#e8e8e8; --toggle-border:#cccccc;
+    --text:#1a1a1a; --muted:#555555; --dim:#888888;
+    --accent:#b22222; --accent-contrast:#ffffff;
+    --good:#43A047; --hard:#FB8C00; --again:#E53935; --easy:#1E88E5;
+    --hsk1:#E53935; --hsk2:#FB8C00; --hsk3:#F9A825;
+    --hsk4:#43A047; --hsk5:#1E88E5; --hsk6:#8E24AA;
+    --pos-pron:#7CB342; --pos-verb:#D81B60; --pos-noun:#00897B; --pos-adj:#F4511E;
+    --pos-adv:#3949AB; --pos-part:#757575; --pos-mw:#8D6E63; --pos-num:#5E35B1;
+    --pos-prep:#00ACC1; --pos-conj:#8D6E63; --pos-intj:#00838F;
+    --shadow:0 2px 12px rgba(0,0,0,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI','PingFang SC',Roboto,'Helvetica Neue',sans-serif;
+    line-height:1.55;min-height:100vh;
+    transition:background-color .25s,color .25s;
+  }
+
+  .top-row{
+    position:sticky;top:0;z-index:50;display:flex;justify-content:flex-end;
+    padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);
+  }
+  .theme-btn{
+    width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card);color:var(--text);font-size:0.9rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background-color .15s;
+  }
+  .theme-btn:hover{background:var(--surface2);}
+
+  /* ═══════ APP LAYOUT ═══════ */
+  .app-layout{
+    max-width:1140px;margin:0 auto;padding:20px 16px 100px;
+    display:grid;grid-template-columns:1fr;gap:20px;align-items:start;
+    transition:grid-template-columns .2s ease;
+  }
+  body.flashcards-on .app-layout{grid-template-columns:240px minmax(0,1fr);}
+
+  .flashcard-sidebar{display:none;}
+  body.flashcards-on .flashcard-sidebar{
+    display:block;position:sticky;top:70px;align-self:start;
+  }
+  .fc-card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .fc-close-row{display:flex;justify-content:flex-end;padding:4px 6px 0;}
+  .fc-close-btn{
+    width:28px;height:28px;border-radius:6px;border:none;
+    background:none;color:var(--dim);font-size:0.9rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .fc-close-btn:hover{background:var(--surface2);color:var(--text);}
+
+  .fc-nav{display:flex;flex-direction:column;padding:6px;}
+  .fc-nav button{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:10px;border:none;
+    background:none;color:var(--muted);font-family:inherit;
+    font-size:0.86rem;font-weight:600;cursor:pointer;text-align:left;
+    transition:background-color .15s,color .15s;
+  }
+  .fc-nav button:hover{background:var(--surface2);color:var(--text);}
+  .fc-nav button.active{background:var(--surface2);color:var(--text);}
+  .fc-nav button .ico{font-size:1rem;}
+  .fc-nav button .badge{
+    margin-left:auto;min-width:20px;height:20px;padding:0 6px;
+    border-radius:10px;background:var(--accent);color:var(--accent-contrast);
+    font-size:0.68rem;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .fc-nav button .badge[hidden]{display:none;}
+
+  .fc-study{border-top:1px solid var(--line);padding:14px 12px;}
+  .fc-count{font-size:0.8rem;color:var(--muted);margin-bottom:12px;line-height:1.5;}
+  .fc-count strong{color:var(--text);}
+  .fc-action{
+    display:flex;align-items:center;gap:8px;width:100%;
+    padding:9px 12px;border-radius:10px;
+    background:var(--surface);border:1px solid var(--line);
+    color:var(--text);font-family:inherit;font-size:0.8rem;font-weight:600;
+    cursor:pointer;margin-bottom:8px;
+    transition:background-color .15s,border-color .15s;
+  }
+  .fc-action:hover{background:var(--surface2);border-color:var(--dim);}
+  .fc-action.primary{
+    background:var(--accent);color:var(--accent-contrast);border-color:var(--accent);
+  }
+  .fc-action.primary:hover{filter:brightness(1.08);}
+  .fc-levels-label{
+    font-size:0.7rem;color:var(--dim);text-transform:uppercase;
+    letter-spacing:.6px;margin:12px 0 8px;
+  }
+  .fc-levels-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .fc-levels-chips button{
+    padding:4px 9px;border-radius:12px;border:1.5px solid var(--toggle-border);
+    background:var(--card);color:var(--muted);font-family:inherit;
+    font-size:0.7rem;font-weight:600;cursor:pointer;transition:all .15s;
+  }
+  .fc-levels-chips button:hover{background:var(--surface2);color:var(--text);}
+
+  /* ═══════ MAIN COLUMN ═══════ */
+  .main-col{min-width:0;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);margin-bottom:16px;
+    transition:background-color .25s,border-color .25s;
+  }
+
+  .song-head{padding:24px 30px;text-align:center;}
+  .song-head h1{font-size:1.85rem;font-weight:700;letter-spacing:4px;color:var(--accent);}
+  .song-head .pinyin-title{font-size:0.95rem;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+  .song-head .english-title{
+    font-size:0.88rem;color:var(--dim);font-style:italic;
+    letter-spacing:0.4px;margin-top:1px;
+  }
+  .song-head .artist{font-size:1rem;margin-top:8px;}
+  .song-head .song-meta{font-size:0.78rem;color:var(--dim);margin-top:2px;font-style:italic;}
+
+  .stream-icons{display:flex;justify-content:center;gap:10px;margin-top:16px;}
+  .stream-icons a{
+    width:38px;height:38px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    color:#fff;text-decoration:none;
+    box-shadow:0 3px 10px rgba(0,0,0,.22);
+    transition:transform .14s,box-shadow .15s,filter .12s;
+  }
+  .stream-icons a:hover{
+    transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.32);filter:brightness(1.08);
+  }
+  .stream-icons a:active{transform:translateY(0) scale(.96);}
+  .stream-icons a.ytmusic{background:#FF0000;}
+  .stream-icons a.deezer{background:#A238FF;}
+  .stream-icons a.qq{background:#31C27C;}
+  .stream-icons a svg{width:20px;height:20px;display:block;}
+
+  .controls-row{
+    display:flex;justify-content:center;align-items:center;
+    gap:14px;flex-wrap:wrap;padding:14px 16px;
+  }
+  .lang-toggle{display:flex;gap:6px;}
+  .lang-toggle button{
+    padding:6px 14px;border-radius:16px;border:1.5px solid var(--toggle-border);
+    background:var(--card);cursor:pointer;font-size:0.78rem;
+    font-family:inherit;font-weight:600;color:var(--muted);transition:all .2s;
+  }
+  .lang-toggle button.active{
+    background:var(--accent);color:var(--accent-contrast);border-color:var(--accent);
+  }
+  .lang-toggle button:hover:not(.active){border-color:var(--dim);}
+
+  .mark-toggle{display:flex;gap:6px;flex-wrap:wrap;}
+  .mark-toggle button{
+    padding:6px 13px;border-radius:16px;border:1.5px solid var(--toggle-border);
+    background:var(--card);cursor:pointer;font-size:0.76rem;
+    font-family:inherit;font-weight:600;color:var(--dim);
+    transition:all .2s;display:inline-flex;align-items:center;gap:5px;
+  }
+  .mark-toggle button .icon{font-size:0.88rem;line-height:1;}
+  .mark-toggle button.active{color:var(--text);border-color:var(--dim);}
+  .mark-toggle button:hover:not(.active){border-color:var(--muted);}
+  #toggle-flashcards.active{
+    background:var(--accent);color:var(--accent-contrast);border-color:var(--accent);
+  }
+  .karaoke-toggle{
+    padding:6px 16px;border-radius:16px;border:1.5px solid var(--toggle-border);
+    background:var(--card);cursor:pointer;font-size:0.78rem;
+    font-family:inherit;font-weight:700;color:var(--dim);transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:6px;letter-spacing:0.3px;
+  }
+  .karaoke-toggle.active{
+    background:linear-gradient(135deg,#d32f2f,#b22222);color:#fff;
+    border-color:var(--accent);box-shadow:0 4px 12px rgba(178,34,34,0.3);
+  }
+  .karaoke-toggle:hover:not(.active){border-color:var(--muted);}
+  body.karaoke-mode .mark-toggle button{opacity:.35;pointer-events:none;}
+  body.karaoke-mode .lang-toggle button{opacity:.35;pointer-events:none;}
+
+  details.collapsible{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);
+  }
+  details.collapsible > summary{
+    padding:12px 20px;cursor:pointer;font-size:0.82rem;
+    font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:1px;display:flex;align-items:center;gap:10px;
+    list-style:none;transition:background .15s;user-select:none;
+  }
+  details.collapsible > summary::-webkit-details-marker{display:none;}
+  details.collapsible > summary::before{
+    content:'▸';display:inline-block;color:var(--dim);
+    transition:transform .2s;font-size:0.9rem;width:12px;text-align:center;
+  }
+  details.collapsible[open] > summary::before{transform:rotate(90deg);}
+  details.collapsible > summary:hover{background:var(--surface2);}
+  details.collapsible[open] > summary{border-bottom:1px solid var(--line);background:var(--surface2);}
+  details.collapsible > .content{padding:14px 20px;}
+  body.hide-hsk details.legend-panel{display:none;}
+  body.hide-grammar details.grammar-panel{display:none;}
+  body.karaoke-mode details.legend-panel,
+  body.karaoke-mode details.grammar-panel{display:none;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:0.8rem;}
+  .legend-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .legend-group h4{
+    font-size:0.72rem;color:var(--muted);text-transform:uppercase;
+    letter-spacing:0.5px;margin-right:2px;
+  }
+  .legend-swatch{
+    display:inline-block;padding:1px 7px;border-radius:3px;
+    color:#fff;font-weight:600;font-size:0.72rem;
+  }
+  .legend-swatch.hsk1{background:var(--hsk1);}
+  .legend-swatch.hsk2{background:var(--hsk2);}
+  .legend-swatch.hsk3{background:var(--hsk3);color:#333;}
+  .legend-swatch.hsk4{background:var(--hsk4);}
+  .legend-swatch.hsk5{background:var(--hsk5);}
+  .legend-swatch.hsk6{background:var(--hsk6);}
+
+  .glossary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;}
+  .glossary-item{
+    display:flex;gap:8px;align-items:flex-start;padding:4px 0;
+    border-bottom:1px dotted var(--line);font-size:0.78rem;line-height:1.5;
+  }
+  .glossary-tag{
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:0.72rem;font-weight:700;min-width:44px;
+    padding:1px 6px;border-radius:3px;color:#fff;flex-shrink:0;
+  }
+  .glossary-tag.pos-pron{background:var(--pos-pron);}
+  .glossary-tag.pos-verb{background:var(--pos-verb);}
+  .glossary-tag.pos-noun{background:var(--pos-noun);}
+  .glossary-tag.pos-adj{background:var(--pos-adj);}
+  .glossary-tag.pos-adv{background:var(--pos-adv);}
+  .glossary-tag.pos-part{background:var(--pos-part);}
+  .glossary-tag.pos-mw{background:var(--pos-mw);}
+  .glossary-tag.pos-num{background:var(--pos-num);}
+  .glossary-tag.pos-prep{background:var(--pos-prep);}
+  .glossary-tag.pos-conj{background:var(--pos-conj);}
+  .glossary-tag.pos-intj{background:var(--pos-intj);}
+  .glossary-desc strong{color:var(--accent);}
+
+  /* ═══════ LYRICS ═══════ */
+  .lyrics{padding:22px 30px;}
+  .line{padding:18px 0;border-bottom:1px dashed var(--line);transition:background-color .2s;}
+  .line:last-child{border-bottom:none;}
+  .line.active{background:color-mix(in srgb, var(--accent) 8%, transparent);border-radius:10px;}
+  .line.past{opacity:0.55;}
+  .line.instrumental{display:flex;justify-content:center;padding:10px 0;}
+  .instr-content{
+    display:flex;align-items:center;gap:8px;color:var(--dim);
+    font-size:0.82rem;font-style:italic;
+  }
+  .words{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:flex-end;margin-bottom:6px;}
+
+  .word{
+    display:flex;flex-direction:column;align-items:center;
+    padding:4px 7px;border-radius:8px;
+    border:1px solid transparent;position:relative;
+    transition:background-color .12s,border-color .12s;
+    text-decoration:none;color:inherit;
+  }
+  .word[data-hz]{cursor:pointer;user-select:none;}
+  .word[data-hz]:hover{background:var(--surface2);}
+  span.word{cursor:default;opacity:0.85;}
+  .word.saved{
+    background:color-mix(in srgb, var(--accent) 12%, transparent);
+    border-color:color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  /* Both the highlight and the badge are Flashcards-mode-only — turning
+     the feature off should hide every trace of it, not just the badge.
+     The underlying save itself (localStorage) is untouched either way. */
+  body:not(.flashcards-on) .word.saved{background:none;border-color:transparent;}
+  .word.saving{animation:pulse .35s ease;}
+  @keyframes pulse{ 50%{ transform:scale(1.15); } }
+
+  .word .literal{
+    font-size:0.55rem;color:var(--muted);font-weight:400;
+    letter-spacing:0.2px;min-height:1em;
+  }
+  body.hide-translation .word .literal{display:none;}
+  .word .hz{font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.5;}
+  .word.h1 .hz,.word .hz.h1{border-bottom:2.5px solid var(--hsk1);}
+  .word .hz.h2{border-bottom:2.5px solid var(--hsk2);}
+  .word .hz.h3{border-bottom:2.5px solid var(--hsk3);}
+  .word .hz.h4{border-bottom:2.5px solid var(--hsk4);}
+  .word .hz.h5{border-bottom:2.5px solid var(--hsk5);}
+  .word .hz.h6{border-bottom:2.5px solid var(--hsk6);}
+  body.hide-hsk .word .hz{border-bottom-color:transparent !important;}
+  .word .py{font-size:0.78rem;color:var(--muted);margin-top:2px;text-align:center;}
+  body.hide-pinyin .word .py{display:none;}
+  .word .pos{
+    font-size:0.58rem;font-weight:500;margin-top:1px;color:var(--dim);
+    text-align:center;line-height:1.2;
+  }
+  .word .pos.pos-pron{color:var(--pos-pron);} .word .pos.pos-verb{color:var(--pos-verb);}
+  .word .pos.pos-noun{color:var(--pos-noun);} .word .pos.pos-adj{color:var(--pos-adj);}
+  .word .pos.pos-adv{color:var(--pos-adv);}   .word .pos.pos-part{color:var(--pos-part);}
+  .word .pos.pos-mw{color:var(--pos-mw);}     .word .pos.pos-num{color:var(--pos-num);}
+  .word .pos.pos-prep{color:var(--pos-prep);} .word .pos.pos-conj{color:var(--pos-conj);}
+  .word .pos.pos-intj{color:var(--pos-intj);}
+  body.hide-grammar .word .pos{visibility:hidden;}
+
+  .word.k-active{background:color-mix(in srgb, var(--accent) 30%, transparent);border-radius:6px;}
+  .word.k-active .hz{transform:scale(1.08);}
+  .word.k-sung .hz{color:var(--dim);}
+
+  .saved-badge{
+    position:absolute;top:-6px;right:-6px;width:16px;height:16px;
+    border-radius:50%;background:var(--good);color:#fff;
+    font-size:0.6rem;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:transform .12s,filter .12s;
+  }
+  .saved-badge:hover{transform:scale(1.2);filter:brightness(1.05);}
+  .saved-badge:active{transform:scale(.9);}
+  /* Badge only shows while Flashcards mode is on — the word's own
+     .saved highlight (border/background) stays regardless, so a
+     saved word doesn't look "unsaved" just because the sidebar is
+     closed, but the checkmark itself is flashcards-mode-only. */
+  body:not(.flashcards-on) .saved-badge{display:none;}
+
+  .line-trans{font-size:0.92rem;font-style:italic;color:var(--text);border-left:3px solid var(--accent);padding-left:12px;margin-top:4px;}
+  body.hide-translation .line-trans{display:none;}
+
+  /* ═══════ KARAOKE BAR ═══════ */
+  .karaoke-bar{display:none;padding:16px 20px;}
+  body.karaoke-mode .karaoke-bar{display:block;}
+  .k-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;}
+  .k-btn{
+    padding:8px 18px;border-radius:20px;border:1.5px solid var(--toggle-border);
+    background:var(--surface);color:var(--text);font-family:inherit;
+    font-size:0.82rem;font-weight:700;cursor:pointer;transition:all .15s;
+  }
+  .k-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .k-icon{
+    width:32px;height:32px;border-radius:50%;border:1.5px solid var(--toggle-border);
+    background:var(--surface);color:var(--text);cursor:pointer;font-size:0.95rem;
+  }
+  .k-time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:0.85rem;}
+  .k-offset{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--dim);}
+  .k-offset-btn{
+    padding:3px 8px;border-radius:10px;border:1px solid var(--toggle-border);
+    background:var(--surface);color:var(--text);cursor:pointer;font-size:0.72rem;
+  }
+  .k-offset-val{font-variant-numeric:tabular-nums;min-width:42px;text-align:center;color:var(--text);font-weight:600;}
+  .k-progress-wrap{width:100%;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;cursor:pointer;margin-top:12px;}
+  .k-progress-fill{height:100%;width:0%;background:var(--accent);transition:width 0.1s linear;}
+
+  /* ═══════ DECK TAB ═══════ */
+  .deck-summary{display:flex;gap:20px;padding:16px 20px;justify-content:center;flex-wrap:wrap;}
+  .deck-summary .stat{font-size:0.85rem;color:var(--muted);}
+  .deck-summary .stat strong{font-size:1.1rem;color:var(--text);}
+  .deck-list{padding:8px;}
+  .deck-row{
+    display:grid;grid-template-columns:auto auto 1fr auto auto auto;
+    align-items:center;gap:12px;padding:10px 14px;border-radius:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .deck-row:last-child{border-bottom:none;}
+  .deck-row:hover{background:var(--surface);}
+  .deck-row .hanzi{font-size:1.1rem;font-weight:600;color:var(--text);}
+  .deck-row .py{color:var(--muted);font-size:0.85rem;}
+  .deck-row .gloss{color:var(--dim);font-size:0.85rem;font-style:italic;}
+  .deck-row .lvl{
+    font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:8px;color:#fff;
+  }
+  .lvl.h1{background:var(--hsk1);} .lvl.h2{background:var(--hsk2);} .lvl.h3{background:var(--hsk3);color:#333;}
+  .lvl.h4{background:var(--hsk4);} .lvl.h5{background:var(--hsk5);} .lvl.h6{background:var(--hsk6);}
+  .deck-row .due{font-size:0.72rem;color:var(--dim);white-space:nowrap;}
+  .deck-row .due.due-now{color:var(--again);font-weight:700;}
+  .deck-row .rm{
+    width:22px;height:22px;border-radius:50%;border:none;background:transparent;
+    color:var(--dim);cursor:pointer;font-size:0.85rem;transition:all .15s;
+  }
+  .deck-row .rm:hover{background:var(--surface2);color:var(--again);}
+
+  .card.empty{padding:50px 20px;text-align:center;}
+  .card.empty .big{font-size:2.4rem;margin-bottom:10px;}
+  .card.empty .title{font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .card.empty .sub{font-size:0.85rem;color:var(--dim);line-height:1.6;}
+
+  /* ═══════ REVIEW TAB ═══════ */
+  .review-wrap{padding:20px;}
+  .review-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .prog-text{font-size:0.75rem;color:var(--muted);white-space:nowrap;}
+  .prog-bar{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+  .prog-bar div{height:100%;background:var(--accent);transition:width .2s;}
+  .card-stage{text-align:center;padding:20px 10px;}
+  .card-front-row{display:flex;align-items:center;justify-content:center;gap:12px;}
+  .card-front{font-size:2.6rem;font-weight:700;color:var(--text);}
+  .sound-btn{
+    width:36px;height:36px;border-radius:50%;border:1.5px solid var(--toggle-border);
+    background:var(--surface);color:var(--text);cursor:pointer;font-size:1rem;
+    display:flex;align-items:center;justify-content:center;transition:all .15s;
+  }
+  .sound-btn:hover{border-color:var(--accent);}
+  .sound-btn.playing{animation:pulse .3s ease;}
+  .card-answer{opacity:0;max-height:0;overflow:hidden;transition:opacity .2s;margin-top:0;}
+  .card-answer.revealed{opacity:1;max-height:400px;margin-top:14px;}
+  .card-answer .py{font-size:1.15rem;color:var(--muted);margin-bottom:4px;}
+  .card-answer .gloss{font-size:1rem;color:var(--text);font-style:italic;margin-bottom:8px;}
+  .card-hsk{display:inline-block;margin-bottom:10px;}
+  .card-answer .context{
+    font-size:0.9rem;color:var(--dim);padding:10px 14px;background:var(--surface);
+    border-radius:8px;line-height:1.7;
+  }
+  .context .hl{color:var(--accent);font-weight:700;}
+  .show-btn{
+    margin-top:16px;padding:12px 28px;border-radius:22px;border:none;
+    background:var(--accent);color:var(--accent-contrast);font-family:inherit;
+    font-size:0.9rem;font-weight:700;cursor:pointer;transition:filter .15s;
+  }
+  .show-btn:hover{filter:brightness(1.08);}
+  .reveal-hint{font-size:0.7rem;color:var(--dim);margin-top:8px;}
+  .reveal-hint kbd{
+    background:var(--surface2);padding:1px 6px;border-radius:4px;font-family:inherit;
+  }
+  .grade-bar{display:none;gap:8px;padding:0 20px 20px;flex-wrap:wrap;justify-content:center;}
+  .grade-bar.revealed{display:flex;}
+  .grade-btn{
+    flex:1;min-width:90px;padding:10px 8px;border-radius:10px;border:none;cursor:pointer;
+    font-family:inherit;color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;
+    transition:transform .1s;
+  }
+  .grade-btn:hover{transform:translateY(-2px);}
+  .grade-btn .lbl{font-size:0.8rem;font-weight:700;}
+  .grade-btn .int{font-size:0.68rem;opacity:0.85;}
+  .grade-btn kbd{
+    font-size:0.62rem;opacity:0.7;background:rgba(255,255,255,.2);
+    padding:0 5px;border-radius:4px;margin-top:2px;
+  }
+  .grade-btn.again{background:var(--again);}
+  .grade-btn.hard{background:var(--hard);}
+  .grade-btn.good{background:var(--good);}
+  .grade-btn.easy{background:var(--easy);}
+
+  /* ═══════ STATS TAB ═══════ */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:12px;padding:20px 20px 8px;}
+  .stat-box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 10px;text-align:center;}
+  .stat-box .num{font-size:1.6rem;font-weight:700;color:var(--accent);}
+  .stat-box .lbl{font-size:0.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+  .bar-section{padding:8px 20px 20px;}
+  .bar-section h3{font-size:0.85rem;color:var(--muted);margin-bottom:12px;}
+  .hsk-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .hsk-bar .label{font-size:0.75rem;color:var(--dim);width:50px;flex-shrink:0;}
+  .hsk-bar .track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+  .hsk-bar .fill{height:100%;border-radius:4px;transition:width .3s;}
+  .hsk-bar .fill.h1{background:var(--hsk1);} .hsk-bar .fill.h2{background:var(--hsk2);}
+  .hsk-bar .fill.h3{background:var(--hsk3);} .hsk-bar .fill.h4{background:var(--hsk4);}
+  .hsk-bar .fill.h5{background:var(--hsk5);} .hsk-bar .fill.h6{background:var(--hsk6);}
+  .hsk-bar .count{font-size:0.75rem;color:var(--muted);width:24px;text-align:right;}
+  .danger-zone{padding:16px 20px;border-top:1px solid var(--line);text-align:center;}
+  .danger-btn{
+    padding:8px 18px;border-radius:16px;border:1.5px solid var(--again);
+    background:transparent;color:var(--again);font-family:inherit;
+    font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .15s;
+  }
+  .danger-btn:hover{background:var(--again);color:#fff;}
+
+  /* ═══════ EXPORT MODAL ═══════ */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
+    z-index:100;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--card);border-radius:16px;max-width:460px;width:100%;
+    max-height:85vh;overflow-y:auto;box-shadow:var(--shadow);
+  }
+  .modal-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 20px;border-bottom:1px solid var(--line);
+  }
+  .modal-head h2{font-size:1.05rem;color:var(--text);}
+  .modal-close{
+    width:28px;height:28px;border-radius:6px;border:none;background:none;
+    color:var(--dim);font-size:1rem;cursor:pointer;
+  }
+  .modal-close:hover{background:var(--surface2);color:var(--text);}
+  .modal-body{padding:18px 20px;}
+  .modal-field{margin-bottom:16px;}
+  .modal-field label{font-size:0.78rem;color:var(--muted);display:block;margin-bottom:6px;}
+  .modal-field input{
+    width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);
+    background:var(--surface);color:var(--text);font-family:inherit;font-size:0.88rem;
+  }
+  .hsk-filters{display:flex;flex-wrap:wrap;gap:6px;}
+  .hsk-filter{
+    padding:5px 11px;border-radius:12px;border:1.5px solid var(--toggle-border);
+    background:var(--card);color:var(--dim);font-family:inherit;
+    font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .15s;
+  }
+  .hsk-filter.on{background:var(--accent);color:var(--accent-contrast);border-color:var(--accent);}
+  #modalSummary{font-size:0.82rem;color:var(--muted);margin:14px 0 8px;}
+  .preview-head{font-size:0.7rem;color:var(--dim);text-transform:uppercase;margin-bottom:6px;}
+  .preview-row{
+    display:flex;gap:10px;align-items:baseline;padding:6px 0;
+    border-bottom:1px dotted var(--line);font-size:0.82rem;
+  }
+  .modal-actions{display:flex;gap:10px;padding:16px 20px;border-top:1px solid var(--line);}
+  .modal-actions button{
+    flex:1;padding:11px;border-radius:10px;border:none;cursor:pointer;
+    font-family:inherit;font-size:0.85rem;font-weight:700;transition:all .15s;
+  }
+  #btnApkg{background:var(--accent);color:var(--accent-contrast);}
+  #btnApkg:hover{filter:brightness(1.08);}
+  #btnApkg.disabled{opacity:.5;pointer-events:none;}
+  #btnTsv{background:var(--surface);color:var(--text);border:1px solid var(--line) !important;}
+  #btnTsv:hover{background:var(--surface2);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#222;color:#fff;padding:10px 20px;border-radius:24px;
+    font-size:0.82rem;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,0.25);
+    opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:200;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:800px){
+    body.flashcards-on .app-layout{grid-template-columns:1fr;}
+    .flashcard-sidebar{position:static !important;}
+    .deck-row{grid-template-columns:auto 1fr auto;row-gap:4px;}
+    .deck-row .py,.deck-row .lvl{grid-column:2;}
+    .word .literal{font-size:0.5rem;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  }
+</style>
+</head>
+<body>
+
+<div class="top-row">
+  <button class="theme-btn" id="themeBtn" title="Toggle dark / light mode">🌙</button>
+</div>
+
+<div class="app-layout">
+  <aside class="flashcard-sidebar">
+    <div class="fc-card">
+      <div class="fc-close-row">
+        <button class="fc-close-btn" id="fcClose" title="Close">✕</button>
+      </div>
+      <nav class="fc-nav" id="fcNav">
+        <button data-tab="read"><span class="ico">📖</span>Read</button>
+        <button data-tab="review"><span class="ico">🎯</span>Review<span class="badge" id="reviewBadge" hidden>0</span></button>
+        <button data-tab="deck"><span class="ico">📚</span>Deck<span class="badge" id="deckBadge" hidden>0</span></button>
+        <button data-tab="stats"><span class="ico">📊</span>Stats</button>
+      </nav>
+      <div class="fc-study">
+        <div class="fc-count" id="fcCount"></div>
+        <button class="fc-action" id="sideExport">📇 Export to Anki</button>
+        <button class="fc-action primary" id="sideReviewBtn">🎯 Review now</button>
+        <div class="fc-levels-label">Save by HSK level</div>
+        <div class="fc-levels-chips" id="sideLevels">
+          <button data-level="1">HSK 1</button>
+          <button data-level="2">HSK 2</button>
+          <button data-level="3">HSK 3</button>
+          <button data-level="4">HSK 4</button>
+          <button data-level="5">HSK 5</button>
+          <button data-level="6">HSK 6</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-col" id="view"></main>
+</div>
+
+<div class="modal-overlay" id="exportOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Export to Anki</h2>
+      <button class="modal-close" id="closeExport">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Deck name</label>
+        <input type="text" id="deckName" placeholder="e.g. Chinese Songs::月亮代表我的心" value="Chinese Songs::月亮代表我的心">
+      </div>
+      <div class="modal-field">
+        <label>HSK levels to include</label>
+        <div class="hsk-filters" id="hskFilters">
+          <button class="hsk-filter" data-hsk="1">HSK 1</button>
+          <button class="hsk-filter" data-hsk="2">HSK 2</button>
+          <button class="hsk-filter" data-hsk="3">HSK 3</button>
+          <button class="hsk-filter" data-hsk="4">HSK 4</button>
+          <button class="hsk-filter" data-hsk="5">HSK 5</button>
+          <button class="hsk-filter" data-hsk="6">HSK 6</button>
+        </div>
+      </div>
+      <div id="modalSummary"></div>
+      <div id="modalPreview"></div>
+    </div>
+    <div class="modal-actions">
+      <button id="btnTsv">Copy as TSV</button>
+      <button id="btnApkg">Download .apkg</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   SONG DATA — 月亮代表我的心 · 邓丽君
+   Real data from the original site, unmodified except for two
+   additive fields (id, english) needed by the flashcard engine.
+   Timestamps: standard LRC for the 1977 recording, with the final
+   3 lines repeated at the end.
+   ═══════════════════════════════════════════════════════════════ */
+const SONG = {
+  id:'yue-liang-dai-biao-wo-de-xin',
+  title:'月亮代表我的心',
+  titlePinyin:'Yuè Liang Dài Biǎo Wǒ De Xīn',
+  english:'The Moon Represents My Heart',
+  artist:'邓丽君 · Teresa Teng',
+  meta:'1977 · 词：孙仪 · 曲：汤尼',
+
+  stream:{
+    ytmusic:{ label:'YouTube Music', url:'https://music.youtube.com/search?q=' + encodeURIComponent('月亮代表我的心 邓丽君') },
+    deezer:{ label:'Deezer', url:'https://www.deezer.com/search/' + encodeURIComponent('月亮代表我的心 邓丽君') },
+    qq:{ label:'QQ 音乐', url:'https://y.qq.com/n/ryqq/search?w=' + encodeURIComponent('月亮代表我的心 邓丽君') }
+  },
+
+  lines:[
+    /* ── Verse 1 ── */
+    { time:'00:12.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:18.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'00:24.00', translation:{en:"My feelings are also true",pt:"Meus sentimentos são sinceros"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'},
+        {hz:'也',py:'yě',gloss:'also',hsk:2,pos:'adv',posName:'adv.'},
+        {hz:'真',py:'zhēn',gloss:'true',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:27.00', translation:{en:"My love is also true",pt:"Meu amor também é verdadeiro"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'noun',posName:'n.'},
+        {hz:'也',py:'yě',gloss:'also',hsk:2,pos:'adv',posName:'adv.'},
+        {hz:'真',py:'zhēn',gloss:'true',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:30.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 2 ── */
+    { time:'00:37.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'00:43.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'00:49.00', translation:{en:"My feelings never change",pt:"Meus sentimentos não mudam"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'},
+        {hz:'不',py:'bù',gloss:'not',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'移',py:'yí',gloss:'change',hsk:6,pos:'verb',posName:'v.'}
+      ]},
+    { time:'00:52.00', translation:{en:"My love never changes",pt:"Meu amor não se altera"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'noun',posName:'n.'},
+        {hz:'不',py:'bù',gloss:'not',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'变',py:'biàn',gloss:'change',hsk:4,pos:'verb',posName:'v.'}
+      ]},
+    { time:'00:55.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Bridge 1 ── */
+    { time:'01:01.00', translation:{en:"A gentle kiss",pt:"Um leve beijo"},
+      words:[
+        {hz:'轻轻',py:'qīng qīng',gloss:'gently',hsk:4,pos:'adv',posName:'adv.'},
+        {hz:'的',py:'de',gloss:'(adv.)',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一个',py:'yī gè',gloss:'a',hsk:1,pos:'num',posName:'num.'},
+        {hz:'吻',py:'wěn',gloss:'kiss',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:07.00', translation:{en:"Has already moved my heart",pt:"Já tocou o meu coração"},
+      words:[
+        {hz:'已经',py:'yǐ jīng',gloss:'already',hsk:3,pos:'adv',posName:'adv.'},
+        {hz:'打动',py:'dǎ dòng',gloss:'move',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:13.00', translation:{en:"A deep love",pt:"Um sentimento profundo"},
+      words:[
+        {hz:'深深',py:'shēn shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一段',py:'yī duàn',gloss:'a segment',hsk:3,pos:'num',posName:'num.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'}
+      ]},
+    { time:'01:19.00', translation:{en:"Makes me miss you to this day",pt:"Me faz sentir sua falta até hoje"},
+      words:[
+        {hz:'教',py:'jiào',gloss:'make',hsk:3,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'思念',py:'sī niàn',gloss:'miss',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'到',py:'dào',gloss:'until',hsk:2,pos:'prep',posName:'prep.'},
+        {hz:'如今',py:'rú jīn',gloss:'now',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 3 ── */
+    { time:'01:25.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'01:31.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'01:37.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'01:40.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'01:43.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Bridge 2 ── */
+    { time:'02:14.00', translation:{en:"A gentle kiss",pt:"Um leve beijo"},
+      words:[
+        {hz:'轻轻',py:'qīng qīng',gloss:'gently',hsk:4,pos:'adv',posName:'adv.'},
+        {hz:'的',py:'de',gloss:'(adv.)',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一个',py:'yī gè',gloss:'a',hsk:1,pos:'num',posName:'num.'},
+        {hz:'吻',py:'wěn',gloss:'kiss',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:20.00', translation:{en:"Has already moved my heart",pt:"Já tocou o meu coração"},
+      words:[
+        {hz:'已经',py:'yǐ jīng',gloss:'already',hsk:3,pos:'adv',posName:'adv.'},
+        {hz:'打动',py:'dǎ dòng',gloss:'move',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:26.00', translation:{en:"A deep love",pt:"Um sentimento profundo"},
+      words:[
+        {hz:'深深',py:'shēn shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'一段',py:'yī duàn',gloss:'a segment',hsk:3,pos:'num',posName:'num.'},
+        {hz:'情',py:'qíng',gloss:'feeling',hsk:4,pos:'noun',posName:'n.'}
+      ]},
+    { time:'02:32.00', translation:{en:"Makes me miss you to this day",pt:"Me faz sentir sua falta até hoje"},
+      words:[
+        {hz:'教',py:'jiào',gloss:'make',hsk:3,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'思念',py:'sī niàn',gloss:'miss',hsk:6,pos:'verb',posName:'v.'},
+        {hz:'到',py:'dào',gloss:'until',hsk:2,pos:'prep',posName:'prep.'},
+        {hz:'如今',py:'rú jīn',gloss:'now',hsk:6,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Verse 4 ── */
+    { time:'02:38.00', translation:{en:"You ask me how deep my love for you is",pt:"Você me pergunta o quanto eu te amo"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'问',py:'wèn',gloss:'ask',hsk:2,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'me',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'多',py:'duō',gloss:'how',hsk:1,pos:'adv',posName:'adv.'},
+        {hz:'深',py:'shēn',gloss:'deep',hsk:3,pos:'adj',posName:'adj.'}
+      ]},
+    { time:'02:44.00', translation:{en:"How much I love you",pt:"Quão grande é o meu amor por você"},
+      words:[
+        {hz:'我',py:'wǒ',gloss:'I',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'爱',py:'ài',gloss:'love',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'有',py:'yǒu',gloss:'have',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'几',py:'jǐ',gloss:'how many',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'分',py:'fēn',gloss:'fraction',hsk:3,pos:'mw',posName:'m.w.'}
+      ]},
+    { time:'02:50.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'02:53.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'02:56.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]},
+
+    /* ── Final repeat: last 3 lines ── */
+    { time:'03:02.00', translation:{en:"Go and think about it",pt:"Pense um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'想',py:'xiǎng',gloss:'think',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'03:05.00', translation:{en:"Go and take a look",pt:"Olhe um pouco"},
+      words:[
+        {hz:'你',py:'nǐ',gloss:'you',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'去',py:'qù',gloss:'go',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'},
+        {hz:'一',py:'yī',gloss:'one',hsk:1,pos:'num',posName:'num.'},
+        {hz:'看',py:'kàn',gloss:'look',hsk:1,pos:'verb',posName:'v.'}
+      ]},
+    { time:'03:08.00', translation:{en:"The moon represents my heart",pt:"A lua representa o meu coração"},
+      words:[
+        {hz:'月亮',py:'yuè liang',gloss:'moon',hsk:3,pos:'noun',posName:'n.'},
+        {hz:'代表',py:'dài biǎo',gloss:'represent',hsk:4,pos:'verb',posName:'v.'},
+        {hz:'我',py:'wǒ',gloss:'my',hsk:1,pos:'pron',posName:'pron.'},
+        {hz:'的',py:'de',gloss:'of',hsk:1,pos:'part',posName:'part.'},
+        {hz:'心',py:'xīn',gloss:'heart',hsk:3,pos:'noun',posName:'n.'}
+      ]}
+  ]
+};
+
+SONG.lines.forEach(line => { line._context = line.words.map(w => w.hz).join(''); });
+
+/* ═══════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════ */
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function parseTimecode(tc){
+  if(!tc) return null;
+  const m = tc.match(/^(\d+):(\d+)(?:[.:](\d+))?$/);
+  if(!m) return null;
+  const frac = m[3] ? parseInt(m[3].padEnd(3,'0'),10) : 0;
+  return parseInt(m[1],10)*60 + parseInt(m[2],10) + frac/1000;
+}
+function fmt(s){
+  s = Math.max(0, s);
+  const m = Math.floor(s/60);
+  const sec = Math.floor(s%60);
+  const dec = Math.floor((s%1)*10);
+  return `${m}:${String(sec).padStart(2,'0')}.${dec}`;
+}
+function mdbgUrl(hz){
+  return 'https://www.mdbg.net/chinese/dictionary?page=worddict&wdrst=0&wdqb=' + encodeURIComponent(hz);
+}
+const isChineseWord = hz => /[\u4e00-\u9fff]/.test(hz);
+function countUniqueWords(song){
+  const s = new Set();
+  for(const line of song.lines)
+    for(const w of line.words)
+      if(w.hsk) s.add(w.hz + '::' + w.py);
+  return s.size;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TIMELINE COMPUTATION (unchanged from the original site)
+   ═══════════════════════════════════════════════════════════════ */
+const SEC_PER_CHAR   = 0.62;
+const GAP_THRESHOLD  = 4.5;
+const SONG_TAIL      = 10;
+
+function computeTimeline(){
+  const lineStarts = SONG.lines.map(l => parseTimecode(l.time));
+  const lastStart  = lineStarts[lineStarts.length - 1];
+  const songEnd    = lastStart + SONG_TAIL;
+  const entries    = [];
+
+  if(lineStarts[0] >= GAP_THRESHOLD){
+    entries.push({ type:'instr', start:0, end:lineStarts[0], label:'前奏 · Intro', key:'intro' });
+  }
+
+  SONG.lines.forEach((line, li) => {
+    const lineStart  = lineStarts[li];
+    const charCount  = line.words.reduce((s, w) => s + w.hz.length, 0);
+    const naturalEnd = lineStart + charCount * SEC_PER_CHAR;
+    const nextStart  = li < SONG.lines.length - 1 ? lineStarts[li+1] : songEnd;
+    const cappedEnd  = Math.min(naturalEnd, nextStart);
+
+    entries.push({ type:'line', start:lineStart, end:cappedEnd, lineIdx:li, line, charCount });
+
+    if(li < SONG.lines.length - 1 && nextStart - cappedEnd >= GAP_THRESHOLD){
+      entries.push({ type:'instr', start:cappedEnd, end:nextStart, label:'间奏 · Instrumental', key:`mid-${li}` });
+    }
+  });
+
+  const lastEntry = entries[entries.length - 1];
+  if(songEnd - lastEntry.end >= GAP_THRESHOLD){
+    entries.push({ type:'instr', start:lastEntry.end, end:songEnd, label:'尾声 · Outro', key:'outro' });
+  }
+
+  return { entries, totalDuration: songEnd };
+}
+
+/* ── Streaming icons: inline SVG brand marks + colored round buttons ──
+   ytmusic/deezer SVGs are exact from the reference draft. The draft's
+   third icon was Bilibili; this song's real stream links use QQ Music
+   instead, so that one SVG is a generic music-note mark rather than a
+   verbatim brand asset. ── */
+const STREAM_SVG = {
+  ytmusic: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/></svg>',
+  deezer:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="5" width="18" height="3.5" rx="1"/><rect x="3" y="10.25" width="18" height="3.5" rx="1"/><rect x="3" y="15.5" width="18" height="3.5" rx="1"/></svg>',
+  qq: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c-3 0-5 2-5 5v2c-1 0-2 1-2 3s1 3 2 3c.5 2 2.5 3 5 3s4.5-1 5-3c1 0 2-1 2-3s-1-3-2-3V8c0-3-2-5-5-5z"/></svg>'
+};
+function streamIconsHtml(){
+  return '<div class="stream-icons">' +
+    Object.entries(SONG.stream).map(([k, s]) =>
+      `<a class="${k}" href="${s.url}" target="_blank" rel="noopener noreferrer" title="${esc(s.label)}" aria-label="${esc(s.label)}">${STREAM_SVG[k] || ''}</a>`
+    ).join('') +
+    '</div>';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUDIO (pronunciation)
+   ═══════════════════════════════════════════════════════════════ */
+const speech = {
+  voices: [], ready: false,
+  init(){
+    if(!('speechSynthesis' in window)) return;
+    const load = () => {
+      this.voices = window.speechSynthesis.getVoices() || [];
+      if(this.voices.length) this.ready = true;
+    };
+    load();
+    window.speechSynthesis.addEventListener('voiceschanged', load);
+    setTimeout(load, 250);
+    setTimeout(load, 1000);
+  },
+  speak(text){
+    if(!('speechSynthesis' in window)){ toast('Speech not supported in this browser'); return false; }
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN'; u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+      const list = this.voices.length ? this.voices : window.speechSynthesis.getVoices();
+      const zh = list.find(v => v.lang && v.lang.toLowerCase().replace('_','-').startsWith('zh'));
+      if(zh) u.voice = zh;
+      u.onerror = () => toast('Audio unavailable — check browser voices');
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch(err){ console.error(err); toast('Could not play audio'); return false; }
+  }
+};
+speech.init();
+
+/* ═══════════════════════════════════════════════════════════════
+   STORAGE — namespaced "csfc-" (Chinese Songs For Class) rather than
+   reusing "hcy-" from the huachenyu-lyrics project: both sites are
+   served from the same nanda-cafe.github.io origin, and localStorage
+   is scoped by origin, not by path, so unprefixed keys would collide.
+   ═══════════════════════════════════════════════════════════════ */
+const STORAGE_KEY = 'csfc-flashcards-v2';
+
+const store = {
+  cards: [],
+  load(){
+    try { this.cards = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch { this.cards = []; }
+  },
+  persist(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.cards)); } catch {} },
+  all(){ return this.cards; },
+  has(id){ return this.cards.some(c => c.id === id); },
+  get(id){ return this.cards.find(c => c.id === id); },
+  add(card){
+    if(this.has(card.id)) return false;
+    this.cards.push(card); this.persist(); return true;
+  },
+  update(card){
+    const i = this.cards.findIndex(c => c.id === card.id);
+    if(i === -1) return;
+    this.cards[i] = card; this.persist();
+  },
+  remove(id){ this.cards = this.cards.filter(c => c.id !== id); this.persist(); },
+  clear(){ this.cards = []; this.persist(); },
+  dueCount(now = Date.now()){ return this.cards.filter(c => c.reps > 0 && c.due <= now).length; },
+  newCount(){ return this.cards.filter(c => c.reps === 0).length; }
+};
+store.load();
+
+/* ═══════════════════════════════════════════════════════════════
+   SRS — SM-2-style scheduling, exact from the reference draft.
+   Grades: 0=Again, 3=Hard, 4=Good, 5=Easy.
+   ═══════════════════════════════════════════════════════════════ */
+const DAY = 86400000, MINUTE = 60000;
+const srs = {
+  schedule(card, grade, now = Date.now()){
+    const c = { ...card };
+    if(grade < 3){
+      c.reps = 0; c.interval = 0;
+      c.lapses = (c.lapses || 0) + 1;
+      c.ease = Math.max(1.3, c.ease - 0.2);
+      c.due = now + MINUTE;
+    } else {
+      let next;
+      if(c.reps === 0) next = 1;
+      else if(c.reps === 1) next = 6;
+      else next = c.interval * c.ease;
+      if(grade === 3) next = Math.max(1, next * 0.6);
+      if(grade === 5) next = next * 1.3;
+      c.interval = Math.round(next);
+      c.reps += 1;
+      c.ease = Math.max(1.3, Math.min(2.8,
+        c.ease + (0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02))
+      ));
+      c.due = now + c.interval * DAY;
+    }
+    c.lastReview = now;
+    return c;
+  },
+  preview(card, grade){
+    if(grade < 3) return '<1m';
+    const d = this.schedule(card, grade).interval;
+    if(d === 1) return '1d';
+    if(d < 30) return d + 'd';
+    if(d < 365) return Math.round(d / 30) + 'mo';
+    return (d / 365).toFixed(1) + 'y';
+  }
+};
+
+function makeCard(word, song, context){
+  return {
+    id: `${word.hz}::${word.py}`,
+    hanzi: word.hz, pinyin: word.py, gloss: word.gloss, hsk: word.hsk,
+    songId: song.id, songTitle: song.title, context,
+    ease: 2.5, interval: 0, reps: 0, lapses: 0,
+    due: Date.now(), lastReview: null, created: Date.now()
+  };
+}
+
+function highlightContext(context, target){
+  if(!context) return '';
+  if(!target) return esc(context);
+  const idx = context.indexOf(target);
+  if(idx === -1) return esc(context);
+  return esc(context.slice(0, idx)) + `<span class="hl">${esc(target)}</span>` + esc(context.slice(idx + target.length));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+const state = {
+  tab: 'read',
+  marks: { hsk:true, grammar:true, translation:true, pinyin:true },
+  flashcardsOn: false, session: null,
+  karaokeOn: false, preKaraokeSnapshot: null
+};
+
+const view = document.getElementById('view');
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2400);
+}
+function applyMarkClasses(){
+  document.body.classList.toggle('hide-hsk',         !state.marks.hsk);
+  document.body.classList.toggle('hide-grammar',     !state.marks.grammar);
+  document.body.classList.toggle('hide-translation', !state.marks.translation);
+  document.body.classList.toggle('hide-pinyin',      !state.marks.pinyin);
+  document.body.classList.toggle('flashcards-on',     state.flashcardsOn);
+  document.body.classList.toggle('karaoke-mode',      state.karaokeOn);
+}
+function updateSidebar(){
+  const all = store.all();
+  const savedFromSong = all.filter(c => c.songId === SONG.id).length;
+  const total = countUniqueWords(SONG);
+  const fcCount = document.getElementById('fcCount');
+  if(fcCount) fcCount.innerHTML = `<strong>${savedFromSong}</strong> of <strong>${total}</strong> words saved`;
+  const due = store.dueCount();
+  const rb = document.getElementById('reviewBadge');
+  const db = document.getElementById('deckBadge');
+  if(rb){ if(due > 0){ rb.hidden = false; rb.textContent = due; } else rb.hidden = true; }
+  if(db){ if(all.length > 0){ db.hidden = false; db.textContent = all.length; } else db.hidden = true; }
+}
+
+function render(){
+  applyMarkClasses();
+  updateSidebar();
+  updateNavHighlight();
+  const effectiveTab = state.flashcardsOn ? state.tab : 'read';
+  switch(effectiveTab){
+    case 'read':   renderRead();   break;
+    case 'deck':   renderDeck();   break;
+    case 'review': renderReview(); break;
+    case 'stats':  renderStats();  break;
+  }
+}
+function updateNavHighlight(){
+  document.querySelectorAll('#fcNav button').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === state.tab));
+  document.querySelectorAll('.mark-toggle button').forEach(b => {
+    const k = b.dataset.mark;
+    if(k === 'flashcards') b.classList.toggle('active', state.flashcardsOn);
+    else b.classList.toggle('active', state.marks[k]);
+  });
+}
+
+/* ═══════ READ VIEW (merged with the karaoke bar + legend/glossary) ═══════ */
+function renderRead(){
+  let lyricsHtml = '';
+  SONG.lines.forEach((line, li) => {
+    const context = line._context;
+    lyricsHtml += `<div class="line" data-line="${li}" data-time="${line.time}"><div class="words">`;
+    for(const w of line.words){
+      const isCn = isChineseWord(w.hz);
+      const id = `${w.hz}::${w.py}`;
+      const inDeck = isCn && store.has(id);
+      const showSaved = inDeck;
+
+      const dataAttrs = isCn
+        ? `data-hz="${esc(w.hz)}" data-py="${esc(w.py)}" data-gloss="${esc(w.gloss || '')}" data-hsk="${w.hsk || ''}" data-context="${esc(context)}"`
+        : '';
+
+      const badge = showSaved
+        ? `<span class="saved-badge" data-remove="${esc(id)}" title="Remove from deck">✓</span>`
+        : '';
+
+      const literal = w.gloss
+        ? `<span class="literal" title="${esc(w.gloss)}">${esc(w.gloss)}</span>`
+        : '<span class="literal">&nbsp;</span>';
+
+      const inner = `
+        ${badge}
+        ${literal}
+        <span class="hz${w.hsk ? ' h'+w.hsk : ''}">${esc(w.hz)}</span>
+        ${w.py ? `<span class="py">${esc(w.py)}</span>` : ''}
+        ${w.posName
+          ? `<a href="#gram-${w.pos}" class="pos pos-${w.pos}">${esc(w.posName)}</a>`
+          : '<span class="pos">&nbsp;</span>'}`;
+
+      if(isCn){
+        lyricsHtml += `
+          <div class="word${showSaved ? ' saved' : ''}"
+             data-href="${mdbgUrl(w.hz)}"
+             title="Click for dictionary · double-click or long-press to save"
+             ${dataAttrs}>
+            ${inner}
+          </div>`;
+      } else {
+        lyricsHtml += `<span class="word">${inner}</span>`;
+      }
+    }
+    lyricsHtml += `</div><div class="line-trans">${esc(line.translation[currentLang] || line.translation.en)}</div></div>`;
+  });
+
+  view.innerHTML = `
+    <div class="card song-head">
+      <h1>${esc(SONG.title)}</h1>
+      <div class="pinyin-title">${esc(SONG.titlePinyin)}</div>
+      ${SONG.english ? `<div class="english-title">${esc(SONG.english)}</div>` : ''}
+      <div class="artist">${esc(SONG.artist)}</div>
+      <div class="song-meta">${esc(SONG.meta)}</div>
+      ${streamIconsHtml()}
+    </div>
+
+    <div class="card controls-row">
+      <div class="lang-toggle">
+        <button data-lang="en" class="${currentLang==='en'?'active':''}">🇬🇧 English</button>
+        <button data-lang="pt" class="${currentLang==='pt'?'active':''}">🇧🇷 Português</button>
+      </div>
+      <div class="mark-toggle">
+        <button data-mark="hsk" class="${state.marks.hsk?'active':''}"><span class="icon">📊</span>HSK</button>
+        <button data-mark="grammar" class="${state.marks.grammar?'active':''}"><span class="icon">📖</span>Grammar</button>
+        <button data-mark="translation" class="${state.marks.translation?'active':''}"><span class="icon">🌐</span>Translation</button>
+        <button data-mark="pinyin" class="${state.marks.pinyin?'active':''}"><span class="icon">🔤</span>Pinyin</button>
+        <button data-mark="flashcards" id="toggle-flashcards" class="${state.flashcardsOn?'active':''}"><span class="icon">📇</span>Flashcards</button>
+      </div>
+      <button class="karaoke-toggle${state.karaokeOn?' active':''}" id="toggle-karaoke">🎤 Karaoke</button>
+    </div>
+
+    <div class="card karaoke-bar">
+      <div class="k-row">
+        <button class="k-btn" id="k-start">▶ Start at first character</button>
+        <button class="k-icon" id="k-reset" title="Reset">⟲</button>
+        <div class="k-time"><span id="k-cur">0:00.0</span> / <span id="k-tot">0:00.0</span></div>
+        <div class="k-offset">
+          <span>nudge</span>
+          <button class="k-offset-btn" id="k-minus">−0.5s</button>
+          <span class="k-offset-val" id="k-offset">0.0s</span>
+          <button class="k-offset-btn" id="k-plus">+0.5s</button>
+        </div>
+      </div>
+      <div class="k-progress-wrap" id="k-progress"><div class="k-progress-fill" id="k-fill"></div></div>
+    </div>
+
+    <details class="collapsible legend-panel">
+      <summary>📊 HSK Colour Legend</summary>
+      <div class="content">
+        <div class="legend">
+          <div class="legend-group">
+            <h4>HSK level</h4>
+            ${[1,2,3,4,5,6].map(n => `<span class="legend-swatch hsk${n}">HSK ${n}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="collapsible grammar-panel">
+      <summary>📖 Grammar Glossary · click POS tags below words</summary>
+      <div class="content">
+        <div class="glossary-grid">
+          ${[
+            ['pron','Pronoun','replaces a noun.'],
+            ['verb','Verb','action or state. No conjugation.'],
+            ['noun','Noun','names beings and things.'],
+            ['adj','Adjective','predicative without 是.'],
+            ['adv','Adverb','before verb/adjective.'],
+            ['part','Particle','grammatical function.'],
+            ['mw','Measure word','counts things.'],
+            ['num','Numeral','number.'],
+            ['prep','Preposition','links terms.'],
+            ['conj','Conjunction','links clauses.'],
+            ['intj','Interjection','emotional expression.']
+          ].map(([cls, name, desc]) => `
+            <div class="glossary-item" id="gram-${cls}">
+              <span class="glossary-tag pos-${cls}">${cls}.</span>
+              <div class="glossary-desc"><strong>${name}</strong> — ${desc}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </details>
+
+    <div class="card lyrics">${lyricsHtml}</div>
+  `;
+
+  attachWordGestures();
+  attachPosLinks();
+  attachLangToggle();
+  attachKaraokeControls();
+  if(state.karaokeOn) buildKaraokeData();
+}
+
+function attachPosLinks(){
+  document.querySelectorAll('#view .pos[href]').forEach(a => {
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      if(!state.marks.grammar) return;
+      const target = document.querySelector(this.getAttribute('href'));
+      if(!target) return;
+      const parentDetails = target.closest('details.collapsible');
+      if(parentDetails && !parentDetails.open) parentDetails.open = true;
+      target.style.background = '#fff7d6';
+      setTimeout(() => { target.style.background = ''; }, 1400);
+      target.scrollIntoView({ behavior:'smooth', block:'center' });
+    });
+  });
+}
+
+let currentLang = 'en';
+function attachLangToggle(){
+  const el = document.querySelector('.lang-toggle');
+  if(!el) return;
+  el.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if(!btn || btn.dataset.lang === currentLang) return;
+    currentLang = btn.dataset.lang;
+    const wasPlaying = state.karaokeOn && kstate.playing;
+    renderRead();
+    if(state.karaokeOn){
+      buildKaraokeData();
+      kstate.playing = wasPlaying;
+      if(wasPlaying) kstate.lastTick = performance.now();
+    }
+  });
+}
+
+/* ═══════ WORD GESTURES (double-click / long-press to save) ═══════ */
+const CLICK_DELAY = 260;
+const LONG_PRESS_MS = 500;
+
+function attachWordGestures(){
+  document.querySelectorAll('.word[data-hz]').forEach(el => {
+    let pendingClick = null;
+    let longPressTimer = null;
+    let suppressClick = false;
+
+    const doToggle = () => {
+      const hz = el.dataset.hz;
+      const py = el.dataset.py;
+      const hsk = Number(el.dataset.hsk);
+      if(!hz || !hsk) return;
+      const id = `${hz}::${py}`;
+      const context = el.dataset.context || '';
+
+      el.classList.add('saving');
+      setTimeout(() => el.classList.remove('saving'), 350);
+
+      if(store.has(id)){
+        store.remove(id);
+        el.classList.remove('saved');
+        const b = el.querySelector('.saved-badge');
+        if(b) b.remove();
+        toast(`Removed ${hz}`);
+      } else {
+        store.add(makeCard({ hz, py, gloss: el.dataset.gloss, hsk }, SONG, context));
+        el.classList.add('saved');
+        if(!el.querySelector('.saved-badge')){
+          const b = document.createElement('span');
+          b.className = 'saved-badge';
+          b.dataset.remove = id;
+          b.title = 'Remove from deck';
+          b.textContent = '✓';
+          b.addEventListener('click', onBadgeClick);
+          b.addEventListener('pointerdown', e => e.stopPropagation());
+          b.addEventListener('pointerup', e => e.stopPropagation());
+          el.insertBefore(b, el.firstChild);
+        }
+        toast(`Saved ${hz}`);
+      }
+      updateSidebar();
+      if(navigator.vibrate) navigator.vibrate(15);
+    };
+
+    const onBadgeClick = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const b = ev.currentTarget;
+      const id = b.dataset.remove;
+      store.remove(id);
+      el.classList.remove('saved');
+      b.remove();
+      toast(`Removed ${el.dataset.hz}`);
+      updateSidebar();
+    };
+
+    el.addEventListener('pointerdown', () => {
+      suppressClick = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        suppressClick = true;
+        doToggle();
+      }, LONG_PRESS_MS);
+    });
+    const cancel = () => { clearTimeout(longPressTimer); longPressTimer = null; };
+    el.addEventListener('pointerup', cancel);
+    el.addEventListener('pointerleave', cancel);
+    el.addEventListener('pointercancel', cancel);
+    el.addEventListener('contextmenu', e => e.preventDefault());
+
+    el.addEventListener('click', e => {
+      if(e.target.closest('.saved-badge')) return;
+      e.preventDefault();
+      if(suppressClick){ suppressClick = false; return; }
+      if(pendingClick){
+        clearTimeout(pendingClick);
+        pendingClick = null;
+        doToggle();
+        return;
+      }
+      const href = el.dataset.href;
+      pendingClick = setTimeout(() => {
+        pendingClick = null;
+        window.open(href, '_blank', 'noopener,noreferrer');
+      }, CLICK_DELAY);
+    });
+
+    const badge = el.querySelector('.saved-badge');
+    if(badge){
+      badge.addEventListener('click', onBadgeClick);
+      badge.addEventListener('pointerdown', e => e.stopPropagation());
+      badge.addEventListener('pointerup', e => e.stopPropagation());
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KARAOKE ENGINE (ported from the original site; runtime object
+   renamed kstate to avoid colliding with the flashcard `state`)
+   ═══════════════════════════════════════════════════════════════ */
+let lineTimings = [];
+let charTimings = [];
+let totalDuration = 0;
+const kstate = { playing:false, time:0, offset:0, curLine:-1, curChar:-1, rafId:null, lastTick:0 };
+
+function buildKaraokeData(){
+  const { entries, totalDuration: td } = computeTimeline();
+  totalDuration = td;
+  lineTimings = [];
+  charTimings = [];
+
+  const allLineEls = document.querySelectorAll('.lyrics > .line');
+
+  entries.forEach((entry, idx) => {
+    const el = allLineEls[idx];
+    if(!el) return;
+
+    if(entry.type === 'line'){
+      lineTimings.push({ type:'line', start:entry.start, end:entry.end, el, lineIdx: entry.lineIdx });
+
+      const wordEls = el.querySelectorAll('.word');
+      const availableDur = entry.end - entry.start;
+      const perChar = availableDur / Math.max(1, entry.charCount);
+      let cursor = entry.start;
+
+      entry.line.words.forEach((w, wi) => {
+        const charCount = w.hz.length;
+        const wStart = cursor;
+        const wEnd   = cursor + charCount * perChar;
+        if(wordEls[wi]){
+          wordEls[wi].dataset.start = wStart;
+          wordEls[wi].dataset.end = wEnd;
+          wordEls[wi].dataset.lineIdx = entry.lineIdx;
+        }
+        for(let ci = 0; ci < charCount; ci++){
+          charTimings.push({ start: wStart + perChar*ci, end: wStart + perChar*(ci+1), lineIdx: entry.lineIdx, wordEl: wordEls[wi] });
+        }
+        cursor = wEnd;
+      });
+    } else {
+      lineTimings.push({ type:'instr', start:entry.start, end:entry.end, el });
+    }
+  });
+
+  const totEl = document.getElementById('k-tot');
+  if(totEl) totEl.textContent = fmt(totalDuration);
+  kstate.curLine = -1;
+  kstate.curChar = -1;
+  updateKaraokeDisplay();
+}
+
+function updateKaraokeDisplay(){
+  const t = kstate.time + kstate.offset;
+  const curEl = document.getElementById('k-cur');
+  const fillEl = document.getElementById('k-fill');
+  if(curEl) curEl.textContent = fmt(t);
+  if(fillEl) fillEl.style.width = Math.min(100, (t / totalDuration) * 100) + '%';
+  updateKaraokeHighlight(t);
+}
+
+function updateKaraokeHighlight(t){
+  let lo = 0, hi = lineTimings.length - 1, idx = -1;
+  while(lo <= hi){
+    const mid = (lo + hi) >> 1;
+    if(lineTimings[mid].start <= t){ idx = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  if(idx !== kstate.curLine){
+    kstate.curLine = idx;
+    lineTimings.forEach((lt, i) => {
+      lt.el.classList.toggle('active', i === idx);
+      lt.el.classList.toggle('past', i < idx);
+    });
+    if(idx >= 0) lineTimings[idx].el.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  document.querySelectorAll('.lyrics .word.k-active, .lyrics .word.k-sung')
+    .forEach(el => el.classList.remove('k-active', 'k-sung'));
+
+  if(idx < 0) return;
+  const curEntry = lineTimings[idx];
+  if(curEntry.type !== 'line') return;
+
+  const curLineIdx = curEntry.lineIdx;
+  charTimings.forEach(ct => {
+    if(ct.lineIdx !== curLineIdx || !ct.wordEl) return;
+    if(t >= ct.start && t < ct.end) ct.wordEl.classList.add('k-active');
+    else if(t >= ct.end) ct.wordEl.classList.add('k-sung');
+  });
+}
+
+function karaokeLoop(now){
+  if(kstate.playing){
+    const dt = (now - kstate.lastTick) / 1000;
+    kstate.time += dt;
+  }
+  kstate.lastTick = now;
+  updateKaraokeDisplay();
+  kstate.rafId = requestAnimationFrame(karaokeLoop);
+}
+
+function attachKaraokeControls(){
+  const startBtn = document.getElementById('k-start');
+  const resetBtn = document.getElementById('k-reset');
+  const minusBtn = document.getElementById('k-minus');
+  const plusBtn  = document.getElementById('k-plus');
+  const progress = document.getElementById('k-progress');
+  if(!startBtn) return;
+
+  startBtn.addEventListener('click', () => {
+    if(!charTimings.length) buildKaraokeData();
+    const firstStart = charTimings[0]?.start ?? 0;
+    kstate.time = firstStart - kstate.offset;
+    kstate.curLine = -1;
+    kstate.playing = true;
+    kstate.lastTick = performance.now();
+    startBtn.textContent = '▶ Playing…';
+    if(!kstate.rafId) kstate.rafId = requestAnimationFrame(karaokeLoop);
+  });
+  resetBtn.addEventListener('click', () => {
+    kstate.playing = false;
+    kstate.time = 0;
+    kstate.curLine = -1;
+    startBtn.textContent = '▶ Start at first character';
+    updateKaraokeDisplay();
+  });
+  function setKOffset(v){
+    kstate.offset = Math.round(v*10)/10;
+    document.getElementById('k-offset').textContent = (kstate.offset >= 0 ? '+' : '') + kstate.offset.toFixed(1) + 's';
+    updateKaraokeDisplay();
+  }
+  minusBtn.addEventListener('click', () => setKOffset(kstate.offset - 0.5));
+  plusBtn.addEventListener('click', () => setKOffset(kstate.offset + 0.5));
+  progress.addEventListener('click', e => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    kstate.time = ratio * totalDuration - kstate.offset;
+    kstate.curLine = -1;
+    updateKaraokeDisplay();
+  });
+}
+
+document.getElementById('view').addEventListener('click', e => {
+  if(e.target.closest('#toggle-karaoke')){
+    if(!state.karaokeOn){
+      state.preKaraokeSnapshot = { ...state.marks };
+      state.karaokeOn = true;
+      state.marks.hsk = state.marks.grammar = state.marks.translation = false;
+      state.marks.pinyin = true;
+      render();
+    } else {
+      state.karaokeOn = false;
+      if(state.preKaraokeSnapshot) state.marks = { ...state.preKaraokeSnapshot };
+      state.preKaraokeSnapshot = null;
+      kstate.playing = false;
+      if(kstate.rafId){ cancelAnimationFrame(kstate.rafId); kstate.rafId = null; }
+      render();
+    }
+  }
+});
+
+/* ═══════ DECK VIEW ═══════ */
+function fmtDue(due){
+  const diff = due - Date.now();
+  if(diff <= 0) return 'due now';
+  const days = Math.round(diff / DAY);
+  if(days === 0) return 'due today';
+  if(days === 1) return 'due tomorrow';
+  return `in ${days}d`;
+}
+function renderDeck(){
+  const all = store.all().filter(c => c.songId === SONG.id);
+
+  if(all.length === 0){
+    view.innerHTML = `
+      <div class="card empty">
+        <div class="big">📚</div>
+        <div class="title">No cards saved yet</div>
+        <div class="sub">Turn on Flashcards mode, then double-click or long-press<br>any Chinese word in the lyrics to save it.</div>
+      </div>`;
+    return;
+  }
+
+  const now = Date.now();
+  const sorted = [...all].sort((a,b) => {
+    const aDue = a.reps > 0 && a.due <= now, bDue = b.reps > 0 && b.due <= now;
+    if(aDue !== bDue) return aDue ? -1 : 1;
+    const aNew = a.reps === 0, bNew = b.reps === 0;
+    if(aNew !== bNew) return aNew ? -1 : 1;
+    return a.due - b.due;
+  });
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="deck-summary">
+        <span class="stat"><strong>${all.length}</strong> total</span>
+        <span class="stat"><strong>${store.dueCount()}</strong> due</span>
+        <span class="stat"><strong>${store.newCount()}</strong> new</span>
+      </div>
+      <div class="deck-list">
+        ${sorted.map(c => {
+          const dueNow = c.reps > 0 && c.due <= now;
+          return `<div class="deck-row" data-id="${esc(c.id)}">
+            <span class="hanzi">${esc(c.hanzi)}</span>
+            <span class="py">${esc(c.pinyin)}</span>
+            <span class="gloss">${esc(c.gloss || '')}</span>
+            ${c.hsk ? `<span class="lvl h${c.hsk}">HSK${c.hsk}</span>` : '<span></span>'}
+            <span class="due${dueNow ? ' due-now' : ''}">${c.reps === 0 ? 'new' : fmtDue(c.due)}</span>
+            <button class="rm" data-remove="${esc(c.id)}" title="Remove">✕</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+/* ═══════ REVIEW VIEW ═══════ */
+const NEW_PER_SESSION = 20;
+function buildSession(){
+  const now = Date.now();
+  const all = store.all().filter(c => c.songId === SONG.id);
+  const due = all.filter(c => c.reps > 0 && c.due <= now).sort((a,b) => a.due - b.due);
+  const fresh = all.filter(c => c.reps === 0).slice(0, NEW_PER_SESSION);
+  state.session = { queue: [...due, ...fresh], idx: 0, revealed: false, total: due.length + fresh.length };
+}
+function renderReview(){
+  if(!state.session) buildSession();
+  const s = state.session;
+
+  if(s.total === 0){
+    view.innerHTML = `
+      <div class="card empty">
+        <div class="big">✅</div>
+        <div class="title">Nothing to review</div>
+        <div class="sub">Save some words from the lyrics first, or come back later.</div>
+      </div>`;
+    return;
+  }
+  if(s.idx >= s.queue.length){
+    view.innerHTML = `
+      <div class="card empty">
+        <div class="big">🎉</div>
+        <div class="title">Session complete</div>
+        <div class="sub">Reviewed ${s.queue.length} card${s.queue.length===1?'':'s'}.</div>
+      </div>`;
+    return;
+  }
+
+  const card = s.queue[s.idx];
+  const pct = Math.round((s.idx / s.queue.length) * 100);
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="review-wrap">
+        <div class="review-head">
+          <span class="prog-text">${s.idx+1} / ${s.queue.length}</span>
+          <div class="prog-bar"><div style="width:${pct}%"></div></div>
+        </div>
+        <div class="card-stage">
+          <div class="card-front-row">
+            <div class="card-front">${esc(card.hanzi)}</div>
+            <button class="sound-btn" id="rv-sound" title="Play pronunciation">🔊</button>
+          </div>
+          <div class="card-answer${s.revealed ? ' revealed' : ''}">
+            <div class="py">${esc(card.pinyin)}</div>
+            <div class="gloss">${esc(card.gloss || '')}</div>
+            ${card.hsk ? `<span class="card-hsk lvl h${card.hsk}">HSK ${card.hsk}</span>` : ''}
+            ${card.context ? `<div class="context">${highlightContext(card.context, card.hanzi)}</div>` : ''}
+          </div>
+          ${!s.revealed ? `
+            <button class="show-btn" id="rv-reveal">Show answer</button>
+            <div class="reveal-hint"><kbd>space</kbd> / <kbd>enter</kbd> to reveal</div>
+          ` : ''}
+        </div>
+      </div>
+      <div class="grade-bar${s.revealed ? ' revealed' : ''}">
+        <button class="grade-btn again" data-grade="0"><span class="lbl">Again</span><span class="int">${srs.preview(card,0)}</span><kbd>1</kbd></button>
+        <button class="grade-btn hard" data-grade="3"><span class="lbl">Hard</span><span class="int">${srs.preview(card,3)}</span><kbd>2</kbd></button>
+        <button class="grade-btn good" data-grade="4"><span class="lbl">Good</span><span class="int">${srs.preview(card,4)}</span><kbd>3</kbd></button>
+        <button class="grade-btn easy" data-grade="5"><span class="lbl">Easy</span><span class="int">${srs.preview(card,5)}</span><kbd>4</kbd></button>
+      </div>
+    </div>`;
+
+  const soundBtn = document.getElementById('rv-sound');
+  if(soundBtn) soundBtn.addEventListener('click', () => {
+    soundBtn.classList.add('playing');
+    speech.speak(card.hanzi);
+    setTimeout(() => soundBtn.classList.remove('playing'), 350);
+  });
+  const revealBtn = document.getElementById('rv-reveal');
+  if(revealBtn) revealBtn.addEventListener('click', revealCard);
+}
+function revealCard(){
+  if(!state.session) return;
+  state.session.revealed = true;
+  renderReview();
+}
+function gradeCard(grade){
+  const s = state.session;
+  if(!s || s.idx >= s.queue.length) return;
+  const card = s.queue[s.idx];
+  const updated = srs.schedule(card, grade);
+  store.update(updated);
+  s.idx += 1;
+  s.revealed = false;
+  updateSidebar();
+  renderReview();
+}
+
+/* ═══════ STATS VIEW ═══════ */
+function renderStats(){
+  const all = store.all().filter(c => c.songId === SONG.id);
+  const now = Date.now();
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+
+  const dueNow = all.filter(c => c.reps > 0 && c.due <= now).length;
+  const newCount = all.filter(c => c.reps === 0).length;
+  const mature = all.filter(c => c.interval >= 21).length;
+  const reviewedToday = all.filter(c => c.lastReview && c.lastReview >= todayStart.getTime()).length;
+
+  const byLevel = {1:0,2:0,3:0,4:0,5:0,6:0};
+  all.forEach(c => { if(c.hsk) byLevel[c.hsk]++; });
+  const maxLevel = Math.max(1, ...Object.values(byLevel));
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="stats-grid">
+        <div class="stat-box"><div class="num">${all.length}</div><div class="lbl">Total</div></div>
+        <div class="stat-box"><div class="num">${dueNow}</div><div class="lbl">Due now</div></div>
+        <div class="stat-box"><div class="num">${newCount}</div><div class="lbl">New</div></div>
+        <div class="stat-box"><div class="num">${mature}</div><div class="lbl">Mature</div></div>
+        <div class="stat-box"><div class="num">${reviewedToday}</div><div class="lbl">Reviewed today</div></div>
+      </div>
+      <div class="bar-section">
+        <h3>By HSK level</h3>
+        ${[1,2,3,4,5,6].map(n => `
+          <div class="hsk-bar">
+            <span class="label">HSK ${n}</span>
+            <div class="track"><div class="fill h${n}" style="width:${(byLevel[n]/maxLevel*100)||0}%"></div></div>
+            <span class="count">${byLevel[n]}</span>
+          </div>`).join('')}
+      </div>
+      ${all.length > 0 ? `
+        <div class="danger-zone">
+          <button class="danger-btn" id="clearDeck">Clear all saved cards for this song</button>
+        </div>` : ''}
+    </div>`;
+
+  const clearBtn = document.getElementById('clearDeck');
+  if(clearBtn) clearBtn.addEventListener('click', () => {
+    if(!confirm(`Remove all ${all.length} saved cards for this song? This cannot be undone.`)) return;
+    all.forEach(c => store.remove(c.id));
+    document.querySelectorAll('.word.saved').forEach(el => {
+      el.classList.remove('saved');
+      const b = el.querySelector('.saved-badge');
+      if(b) b.remove();
+    });
+    toast('Deck cleared');
+    updateSidebar();
+    renderStats();
+  });
+}
+
+/* ═══════ EXPORT MODAL ═══════ */
+let exportLevels = new Set([1,2,3,4,5,6]);
+function openExportModal(){
+  document.getElementById('exportOverlay').classList.add('open');
+  document.querySelectorAll('.hsk-filter').forEach(b =>
+    b.classList.toggle('on', exportLevels.has(Number(b.dataset.hsk))));
+  updateExportPreview();
+}
+function closeExportModal(){
+  document.getElementById('exportOverlay').classList.remove('open');
+}
+function cardsForExport(){
+  return store.all().filter(c => c.songId === SONG.id && exportLevels.has(c.hsk));
+}
+function updateExportPreview(){
+  const cards = cardsForExport();
+  document.getElementById('modalSummary').textContent =
+    `${cards.length} card${cards.length===1?'':'s'} will be exported`;
+  const preview = document.getElementById('modalPreview');
+  if(cards.length === 0){ preview.innerHTML = ''; return; }
+  preview.innerHTML = '<div class="preview-head">Preview</div>' +
+    cards.slice(0,6).map(c => `<div class="preview-row">
+      <strong>${esc(c.hanzi)}</strong><span>${esc(c.pinyin)}</span><span>${esc(c.gloss||'')}</span>
+    </div>`).join('') +
+    (cards.length > 6 ? `<div class="preview-row" style="opacity:.6">+ ${cards.length-6} more…</div>` : '');
+}
+
+document.getElementById('closeExport').addEventListener('click', closeExportModal);
+document.getElementById('exportOverlay').addEventListener('click', e => {
+  if(e.target.id === 'exportOverlay') closeExportModal();
+});
+document.getElementById('hskFilters').addEventListener('click', e => {
+  const btn = e.target.closest('.hsk-filter');
+  if(!btn) return;
+  const n = Number(btn.dataset.hsk);
+  if(exportLevels.has(n)) exportLevels.delete(n); else exportLevels.add(n);
+  btn.classList.toggle('on');
+  updateExportPreview();
+});
+
+document.getElementById('btnTsv').addEventListener('click', async () => {
+  const cards = cardsForExport();
+  if(cards.length === 0){ toast('No cards match the selected levels'); return; }
+  const tsv = cards.map(c => [c.hanzi, c.pinyin, c.gloss||'', c.hsk||'', c.songTitle||''].join('\t')).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    toast(`Copied ${cards.length} cards as TSV`);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = tsv; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast(`Copied ${cards.length} cards as TSV`); }
+    catch { toast('Could not copy — clipboard access blocked'); }
+    document.body.removeChild(ta);
+  }
+});
+
+document.getElementById('btnApkg').addEventListener('click', async () => {
+  const cards = cardsForExport();
+  if(cards.length === 0){ toast('No cards match the selected levels'); return; }
+
+  const ready = typeof window.initSqlJs === 'function' &&
+                typeof window.Model === 'function' &&
+                typeof window.Deck === 'function' &&
+                typeof window.Package === 'function' &&
+                typeof window.saveAs === 'function';
+  if(!ready){
+    toast('genanki-js failed to load — try "Copy as TSV" instead');
+    return;
+  }
+
+  const btn = document.getElementById('btnApkg');
+  btn.disabled = true; btn.textContent = 'Building…';
+  try {
+    const SQL = await window.initSqlJs({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/${f}`
+    });
+
+    const model = new window.Model({
+      name: 'Hanzi → Pinyin + Gloss',
+      id: '1700000000001',
+      flds: [{ name:'Hanzi' }, { name:'Back' }],
+      req: [[0,'all',[0]], [1,'all',[1]]],
+      tmpls: [{ name:'Card 1', qfmt:'{{Hanzi}}', afmt:'{{FrontSide}}<hr id="answer">{{Back}}' }]
+    });
+
+    const deckName = document.getElementById('deckName').value.trim() || `Chinese Songs::${SONG.title}`;
+    const ankiDeck = new window.Deck(1700000000002, deckName);
+    cards.forEach(c => {
+      const back = [c.pinyin, c.gloss, c.hsk ? `HSK ${c.hsk}` : ''].filter(Boolean).join(' — ');
+      ankiDeck.addNote(model.note([c.hanzi, back]));
+    });
+
+    const pkg = new window.Package();
+    pkg.setSqlJs(SQL);
+    pkg.addDeck(ankiDeck);
+    await pkg.writeToFile(`${SONG.title.replace(/[^\p{L}\p{N}]+/gu,'-')}-flashcards.apkg`);
+    toast(`Downloaded ${cards.length} cards as .apkg`);
+    closeExportModal();
+  } catch(err){
+    console.error('Anki export failed:', err);
+    toast('Anki export failed — try "Copy as TSV" instead');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Download .apkg';
+  }
+});
+
+/* ═══════ DELEGATED CLICKS on #view (deck remove, grade buttons) ═══════ */
+document.getElementById('view').addEventListener('click', e => {
+  const rm = e.target.closest('[data-remove]');
+  if(rm){
+    store.remove(rm.dataset.remove);
+    updateSidebar();
+    if(state.tab === 'deck') renderDeck();
+    else if(state.tab === 'stats') renderStats();
+    toast('Removed');
+    return;
+  }
+  const gradeBtn = e.target.closest('.grade-btn');
+  if(gradeBtn){ gradeCard(Number(gradeBtn.dataset.grade)); return; }
+
+  const markBtn = e.target.closest('.mark-toggle button[data-mark]');
+  if(markBtn){
+    const key = markBtn.dataset.mark;
+    if(key === 'flashcards'){
+      state.flashcardsOn = !state.flashcardsOn;
+      if(state.flashcardsOn) state.tab = 'read';
+    } else {
+      state.marks[key] = !state.marks[key];
+    }
+    render();
+  }
+});
+
+/* ═══════ SIDEBAR ═══════ */
+document.getElementById('fcClose').addEventListener('click', () => {
+  state.flashcardsOn = false;
+  render();
+});
+document.getElementById('fcNav').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  state.tab = btn.dataset.tab;
+  if(state.tab === 'review') buildSession();
+  render();
+});
+document.getElementById('sideExport').addEventListener('click', openExportModal);
+document.getElementById('sideReviewBtn').addEventListener('click', () => {
+  state.flashcardsOn = true;
+  state.tab = 'review';
+  buildSession();
+  render();
+});
+document.getElementById('sideLevels').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-level]');
+  if(!btn) return;
+  const level = Number(btn.dataset.level);
+  let added = 0;
+  SONG.lines.forEach(line => {
+    line.words.forEach(w => {
+      if(w.hsk === level && isChineseWord(w.hz)){
+        const id = `${w.hz}::${w.py}`;
+        if(!store.has(id)){
+          store.add(makeCard(w, SONG, line._context));
+          added++;
+        }
+      }
+    });
+  });
+  toast(added > 0 ? `Added ${added} HSK ${level} word${added===1?'':'s'}` : `All HSK ${level} words already saved`);
+  updateSidebar();
+  if(state.tab === 'read') renderRead();
+  else if(state.tab === 'deck') renderDeck();
+  else if(state.tab === 'stats') renderStats();
+});
+
+/* ═══════ KEYBOARD SHORTCUTS ═══════ */
+document.addEventListener('keydown', e => {
+  if(e.target.matches('input, textarea')) return;
+
+  if(document.getElementById('exportOverlay').classList.contains('open')){
+    if(e.code === 'Escape') closeExportModal();
+    return;
+  }
+
+  if(state.karaokeOn){
+    if(e.code === 'Space'){
+      e.preventDefault();
+      document.getElementById('k-start')?.click();
+    }
+    return;
+  }
+
+  if(!state.flashcardsOn || state.tab !== 'review') return;
+  const s = state.session;
+  if(!s || s.idx >= s.queue.length) return;
+
+  if((e.code === 'Space' || e.code === 'Enter') && !s.revealed){
+    e.preventDefault();
+    revealCard();
+  } else if(s.revealed && ['Digit1','Digit2','Digit3','Digit4'].includes(e.code)){
+    e.preventDefault();
+    const gradeMap = { Digit1:0, Digit2:3, Digit3:4, Digit4:5 };
+    gradeCard(gradeMap[e.code]);
+  }
+});
+
+/* ═══════ THEME ═══════ */
+const themeBtn = document.getElementById('themeBtn');
+function syncThemeIcon(){
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  themeBtn.textContent = isDark ? '☀️' : '🌙';
+}
+syncThemeIcon();
+themeBtn.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('csfc-theme', next);
+  syncThemeIcon();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════ */
+render();
+</script>
+</body>
+</html>
